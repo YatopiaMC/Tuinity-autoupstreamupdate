@@ -1,6 +1,8 @@
-# Tuinity-autoupstreamupdate
-Tuinity with auto upstream updating
+# Tunity Upstream Repo for Yatopia. 
+This features auto upstream updating and allows us to have greater controll over the update process.
 
-1.16 Download: https://github.com/tsao-chi/Tuinity-autoupstreamupdate/actions?query=branch%3Amaster
+Orignail Repo: https://github.com/tsao-chi/Tuinity-autoupstreamupdate
 
-1.15.2 Download: https://github.com/tsao-chi/Tuinity-autoupstreamupdate/actions?query=branch%3Aver%2F1.15.2
+Tuinity: https://github.com/Spottedleaf/Tuinity
+
+ 
