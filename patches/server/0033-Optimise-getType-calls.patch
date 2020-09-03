@@ -69,7 +69,7 @@ index 0f89e776816ad4ecb6c3e54c2549692f1b5b6aae..f24d423456def11c17b94670d94540f2
  
      public void setFlag(int flag) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java b/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
-index bbded5671e986be34ebe3100e4c10ee0d5741764..980890153294c04502108d6852e347ca8b1ac200 100644
+index 7591159c25899fb7a58b25622c6b7241b788652e..e5c3e5765c09cb0537152524fca4c41df6f9e38f 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/data/CraftBlockData.java
 @@ -44,7 +44,7 @@ public class CraftBlockData implements BlockData {
