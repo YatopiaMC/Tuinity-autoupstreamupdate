@@ -878,7 +878,7 @@ index 45c142c227bc258bbd5c8c03c6012663dccf8f3f..43c8aef35aaf5ee14bcdb486fa1f607d
          PlayerChunk playerchunk = this.getChunk(k);
  
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 45e7e30892d031df42ae72de28ba4bbe8e1a6cd5..2b3560572a08f3ad0a50a920aa88f78644141ee0 100644
+index 1ee01486f880992c2694f1dd637e9828b1d40c2d..e65a239308cd55c2d50576e2bf05c1194e8c2c9b 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -208,6 +208,14 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
