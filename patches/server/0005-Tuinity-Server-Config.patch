@@ -244,10 +244,10 @@ index 0000000000000000000000000000000000000000..775e7dbc5af5ba6245d1486ca686b290
 +}
 \ No newline at end of file
 diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index 0eabd62adbc34a2d39a613c3eb580b86628a194c..c4bbe44639e017df6cc679489a09852edf285f6f 100644
+index f55dc28f3e220966199ec718a437e50ef4b76027..8542f2f4d2a43e9224fb525723c953f0d179eb40 100644
 --- a/src/main/java/net/minecraft/server/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/DedicatedServer.java
-@@ -170,6 +170,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -166,6 +166,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
          com.destroystokyo.paper.PaperConfig.registerCommands();
          com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // load version history now
          // Paper end
