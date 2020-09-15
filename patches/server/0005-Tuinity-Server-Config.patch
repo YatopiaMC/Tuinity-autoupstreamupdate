@@ -277,10 +277,10 @@ index eaa285393454771052fae7676d2983ec2efae10b..3b13816529af468388a536849a947504
          this.world = new CraftWorld((WorldServer) this, gen, env);
          this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index ce33eda6035aff08d4beb30204a8d5f58a568d37..be87b144c4437efff65842305bc3b8b0b41b3f66 100644
+index 36d05c50db133bca8894ff95b8306fa157cab736..182bded1e0201586053463ba0327bb97d70b6915 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -854,6 +854,7 @@ public final class CraftServer implements Server {
+@@ -856,6 +856,7 @@ public final class CraftServer implements Server {
  
          org.spigotmc.SpigotConfig.init((File) console.options.valueOf("spigot-settings")); // Spigot
          com.destroystokyo.paper.PaperConfig.init((File) console.options.valueOf("paper-settings")); // Paper
@@ -288,7 +288,7 @@ index ce33eda6035aff08d4beb30204a8d5f58a568d37..be87b144c4437efff65842305bc3b8b0
          for (WorldServer world : console.getWorlds()) {
              world.worldDataServer.setDifficulty(config.difficulty);
              world.setSpawnFlags(config.spawnMonsters, config.spawnAnimals);
-@@ -888,6 +889,7 @@ public final class CraftServer implements Server {
+@@ -890,6 +891,7 @@ public final class CraftServer implements Server {
              }
              world.spigotConfig.init(); // Spigot
              world.paperConfig.init(); // Paper
@@ -296,7 +296,7 @@ index ce33eda6035aff08d4beb30204a8d5f58a568d37..be87b144c4437efff65842305bc3b8b0
          }
  
          Plugin[] pluginClone = pluginManager.getPlugins().clone(); // Paper
-@@ -2239,6 +2241,14 @@ public final class CraftServer implements Server {
+@@ -2250,6 +2252,14 @@ public final class CraftServer implements Server {
              return com.destroystokyo.paper.PaperConfig.config;
          }
  
