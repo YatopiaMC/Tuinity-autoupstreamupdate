@@ -8,7 +8,7 @@ Sync loading the chunk at this stage would cause it to load
 older data, as well as screwing our region state.
 
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index 881648b4eb81836504d1ec895f2e82ff624f0b40..8da0282fbe4a71399c3c9f74ab562b8f76120c70 100644
+index e7ee64f292215e0a03e09f8549b376656a7ddc92..811a1faa93f7a20de20f1edf2b18f9b9c935f38f 100644
 --- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
 @@ -816,6 +816,7 @@ public class ChunkProviderServer extends IChunkProvider {

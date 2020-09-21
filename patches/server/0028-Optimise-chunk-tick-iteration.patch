@@ -6,7 +6,7 @@ Subject: [PATCH] Optimise chunk tick iteration
 Use a dedicated list of entity ticking chunks to reduce the cost
 
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index f7ffb0b88511ef00646e6fef9ebb945df0aa5d76..9edf2991f6d7bf4ad8b42657b74035a69c85b54f 100644
+index f7ffb0b88511ef00646e6fef9ebb945df0aa5d76..739f48a70d4c535906ff8f9c1f6e976deb875fcf 100644
 --- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
 @@ -23,6 +23,12 @@ import it.unimi.dsi.fastutil.longs.LongIterator; // Paper
@@ -77,7 +77,7 @@ index f7ffb0b88511ef00646e6fef9ebb945df0aa5d76..9edf2991f6d7bf4ad8b42657b74035a6
                      }
                  }
 -            });// Paper - use for instead of forEachVisibleChunk
-+            } // Paper - use for instead of forEachVisibleChunk // Tuinity start - optimise chunk tick iteration
++            } // Tuinity start - optimise chunk tick iteration
 +            this.isTickingChunks = false;
 +            if (!this.pendingEntityTickingChunkChanges.isEmpty()) {
 +                // iterate backwards: fastutil maps have better remove times when iterating backwards
