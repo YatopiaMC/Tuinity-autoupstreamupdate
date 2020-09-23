@@ -11,7 +11,7 @@ Less crammed entities are likely to show significantly less benefit.
 Effectively, this patch optimises crammed entity situations.
 
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 7b3cb52aa64c816bbe78bb477ad11954d4587498..54a7cb46ce24b33925620169bd94faa8101a155e 100644
+index 9b8b856d7c23fd5ed1196fdce93381c16c7d28a7..235d9e1ed3e255c73bac831a477944ff875661f1 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
 @@ -91,6 +91,56 @@ public class Chunk implements IChunkAccess {

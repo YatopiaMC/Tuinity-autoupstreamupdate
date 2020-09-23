@@ -8,10 +8,10 @@ Sync loading the chunk at this stage would cause it to load
 older data, as well as screwing our region state.
 
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index dd8ec6e39fd0ec9c87f86d3c8a4977954c0303d8..33c77fa45545555a86755e5cdd35542ca9cb85cd 100644
+index cdb45841011abb0707cad630c558c592fd5944ce..b74ff6b9f39cb64d2e7bfa052eb04e276f1f35b6 100644
 --- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-@@ -819,6 +819,7 @@ public class ChunkProviderServer extends IChunkProvider {
+@@ -818,6 +818,7 @@ public class ChunkProviderServer extends IChunkProvider {
  
      public boolean tickDistanceManager() { // Paper - private -> public
          if (chunkMapDistance.delayDistanceManagerTick) return false; // Paper
@@ -20,7 +20,7 @@ index dd8ec6e39fd0ec9c87f86d3c8a4977954c0303d8..33c77fa45545555a86755e5cdd35542c
          boolean flag = this.chunkMapDistance.a(this.playerChunkMap);
          boolean flag1 = this.playerChunkMap.b();
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 3219fbf5eb4cd95665e8944624313c05695904b3..430d200b3eeb4b130662d995b40644b76cbfb073 100644
+index 70a62e5ea0431e2d4054607df95bcd28a04ee325..c514381ffc4498168f083a5c0e911e77b971d593 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
 @@ -783,6 +783,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
@@ -53,7 +53,7 @@ index 3219fbf5eb4cd95665e8944624313c05695904b3..430d200b3eeb4b130662d995b40644b7
                  // Tuinity start
                  boolean removed;
                  if ((removed = this.pendingUnload.remove(i, playerchunk)) && ichunkaccess != null) { // Tuinity end
-@@ -1077,6 +1086,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1075,6 +1084,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
                      this.worldLoadListener.a(ichunkaccess.getPos(), (ChunkStatus) null);
                  }
                  if (removed) this.dataRegionManager.removeChunk(playerchunk.location.x, playerchunk.location.z); // Tuinity

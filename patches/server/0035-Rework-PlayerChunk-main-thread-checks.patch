@@ -74,10 +74,10 @@ index ae8fe48e584a4b47636fb1b4448224baf7b49801..45cd41c9277972ca8ad2f4cd6f0d1a57
                  if (chunk != null) {
                      playerchunkmap.callbackExecutor.execute(() -> {
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index fb19e8b2945ad9708b765dd915465b12ad7985de..b34888674668ad608aafd73f2982d02facfb1bd5 100644
+index 9168d425d65426627ed1ec58fff63d25f65d7e91..a3231934143bcf379d2439dda876542af38eb814 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -1272,7 +1272,10 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
+@@ -1270,7 +1270,10 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
              }
              // Paper end
              this.mailboxWorldGen.a(ChunkTaskQueueSorter.a(playerchunk, runnable));
