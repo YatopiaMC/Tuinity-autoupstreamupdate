@@ -6,19 +6,10 @@ Subject: [PATCH] Range check flag dirty calls in PlayerChunk
 Simply return.
 
 diff --git a/src/main/java/net/minecraft/server/PlayerChunk.java b/src/main/java/net/minecraft/server/PlayerChunk.java
-index 45cd41c9277972ca8ad2f4cd6f0d1a577e57f95d..099865a3f2b0be0d1e54c1d139d754929543e985 100644
+index 46e251bd4110e2803d9f156b916c18c4b17bbe3d..e6576054f1db3438d79e04fe252d20864ec84a08 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunk.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunk.java
-@@ -361,7 +361,7 @@ public class PlayerChunk {
-     public void a(BlockPosition blockposition) {
-         Chunk chunk = this.getSendingChunk(); // Paper - no-tick view distance
- 
--        if (chunk != null) {
-+        if (chunk != null && (blockposition.getY() >= 0 && blockposition.getY() <= 255)) { // Tuinity - updates cannot happen in sections that don't exist
-             byte b0 = (byte) SectionPosition.a(blockposition.getY());
- 
-             if (b0 >= this.dirtyBlocks.length) return; // CraftBukkit - SPIGOT-6086
-@@ -420,7 +420,7 @@ public class PlayerChunk {
+@@ -421,7 +421,7 @@ public class PlayerChunk {
                          this.a(world, blockposition, iblockdata);
                      } else {
                          ChunkSection chunksection = chunk.getSections()[sectionposition.getY()];

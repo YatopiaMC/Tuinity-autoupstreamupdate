@@ -1015,10 +1015,10 @@ index f07ba2f9d9e63e5ac1b3220d14c0cf64c3c30c6c..0fe6b590678ac566abd4233f4f5dcd8f
                  midTickLoadChunks(); // Paper
              } catch (Throwable throwable) {
 diff --git a/src/main/java/net/minecraft/server/PlayerChunk.java b/src/main/java/net/minecraft/server/PlayerChunk.java
-index 31684667a6a76fc83feb657def40bd34599ae159..ae8fe48e584a4b47636fb1b4448224baf7b49801 100644
+index 6ef71230ef8fac4d9bc2d48a433521d541027e96..26c4f40df8f31bae2ad0cf47de7f58930bb99914 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunk.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunk.java
-@@ -503,6 +503,7 @@ public class PlayerChunk {
+@@ -504,6 +504,7 @@ public class PlayerChunk {
          // Paper end - per player view distance
      }
  
@@ -1026,7 +1026,7 @@ index 31684667a6a76fc83feb657def40bd34599ae159..ae8fe48e584a4b47636fb1b4448224ba
      public CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> a(ChunkStatus chunkstatus, PlayerChunkMap playerchunkmap) {
          int i = chunkstatus.c();
          CompletableFuture<Either<IChunkAccess, PlayerChunk.Failure>> completablefuture = (CompletableFuture) this.statusFutures.get(i);
-@@ -673,6 +674,9 @@ public class PlayerChunk {
+@@ -674,6 +675,9 @@ public class PlayerChunk {
                      // Paper start - rewrite ticklistserver
                      PlayerChunk.this.chunkMap.world.onChunkSetTicking(PlayerChunk.this.location.x, PlayerChunk.this.location.z);
                      // Paper end - rewrite ticklistserver
@@ -1036,7 +1036,7 @@ index 31684667a6a76fc83feb657def40bd34599ae159..ae8fe48e584a4b47636fb1b4448224ba
  
                  }
              });
-@@ -683,6 +687,12 @@ public class PlayerChunk {
+@@ -684,6 +688,12 @@ public class PlayerChunk {
          if (flag4 && !flag5) {
              this.tickingFuture.complete(PlayerChunk.UNLOADED_CHUNK); this.isTickingReady = false; // Paper - cache chunk ticking stage
              this.tickingFuture = PlayerChunk.UNLOADED_CHUNK_FUTURE;
@@ -1049,7 +1049,7 @@ index 31684667a6a76fc83feb657def40bd34599ae159..ae8fe48e584a4b47636fb1b4448224ba
          }
  
          boolean flag6 = playerchunk_state.isAtLeast(PlayerChunk.State.ENTITY_TICKING);
-@@ -700,7 +710,9 @@ public class PlayerChunk {
+@@ -701,7 +711,9 @@ public class PlayerChunk {
                      Chunk entityTickingChunk = either.left().get();
                      PlayerChunk.this.isEntityTickingReady = true;
  
@@ -1060,7 +1060,7 @@ index 31684667a6a76fc83feb657def40bd34599ae159..ae8fe48e584a4b47636fb1b4448224ba
  
  
                  }
-@@ -712,6 +724,12 @@ public class PlayerChunk {
+@@ -713,6 +725,12 @@ public class PlayerChunk {
          if (flag6 && !flag7) {
              this.entityTickingFuture.complete(PlayerChunk.UNLOADED_CHUNK); this.isEntityTickingReady = false; // Paper - cache chunk ticking stage
              this.entityTickingFuture = PlayerChunk.UNLOADED_CHUNK_FUTURE;
