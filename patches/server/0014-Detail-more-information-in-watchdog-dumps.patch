@@ -7,7 +7,7 @@ Subject: [PATCH] Detail more information in watchdog dumps
 - Dump player name, player uuid, position, and world for packet handling
 
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 8fea0d66e7e637524b004ffcc20d97ac8cd67f7e..e7f9e9ca005fb6f525a142e3c32c1d5e89d270f4 100644
+index cc46e93c6b8c01d506e987cfbafe13615e8b7dec..f999bd290b17c827a78dd166faa68a55b8fefbf2 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -598,7 +598,39 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
