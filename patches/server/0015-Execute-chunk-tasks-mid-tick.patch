@@ -92,7 +92,7 @@ index 21843fc692701bd51be60fdb597a2ab305a982ce..cf2b02e7d3e75f150aa8782b70bea251
          @Override
          protected boolean executeNext() {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 0fe6b590678ac566abd4233f4f5dcd8ff3b8ea2f..7f538a8a2478a1ebd3ab3d937053b583d0696000 100644
+index 09599c78d40d35e9e4344a2a9bb390756928dfee..7618ef2a2c0a197930f0ad30c77af6876bec672f 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -985,7 +985,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
