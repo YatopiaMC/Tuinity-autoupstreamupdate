@@ -12,7 +12,7 @@ completion (completion of the world gen future,
 PlayerChunkMap#b(PlayerChunk, ChunkStatus)) was detected and fixed.
 
 diff --git a/src/main/java/net/minecraft/server/PlayerChunk.java b/src/main/java/net/minecraft/server/PlayerChunk.java
-index 26c4f40df8f31bae2ad0cf47de7f58930bb99914..46e251bd4110e2803d9f156b916c18c4b17bbe3d 100644
+index ffa16930ade0fee788706955f340e03b09ec52cb..826a370bac8e10a4851f6ee7fda6963ee7f0c890 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunk.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunk.java
 @@ -560,6 +560,7 @@ public class PlayerChunk {
@@ -38,7 +38,7 @@ index 26c4f40df8f31bae2ad0cf47de7f58930bb99914..46e251bd4110e2803d9f156b916c18c4
              // Paper start - cache ticking ready status
              int expectCreateCount = ++this.fullChunkCreateCount;
 -            this.fullChunkFuture = playerchunkmap.b(this); ensureMain(this.fullChunkFuture).thenAccept((either) -> { // Paper - ensure main
-+            this.fullChunkFuture = playerchunkmap.b(this); this.fullChunkFuture.thenAccept((either) -> { // Paper - ensure main // Tuinity - always fired on main
++            this.fullChunkFuture = playerchunkmap.b(this); fullChunkFuture.thenAccept((either) -> { // Paper - ensure main // Tuinity - always fired on main
 +                com.tuinity.tuinity.util.TickThread.ensureTickThread("Async full chunk future completion"); // Tuinity
                  if (either.left().isPresent() && PlayerChunk.this.fullChunkCreateCount == expectCreateCount) {
                      // note: Here is a very good place to add callbacks to logic waiting on this.
@@ -48,8 +48,8 @@ index 26c4f40df8f31bae2ad0cf47de7f58930bb99914..46e251bd4110e2803d9f156b916c18c4
          if (!flag4 && flag5) {
              // Paper start - cache ticking ready status
 -            this.tickingFuture = playerchunkmap.a(this); ensureMain(this.tickingFuture).thenAccept((either) -> { // Paper - ensure main
-+            this.tickingFuture = playerchunkmap.a(this); this.tickingFuture.thenAccept((either) -> { // Paper - ensure main // Tuinity - always completed on main
-+                com.tuinity.tuinity.util.TickThread.ensureTickThread("Async ticking chunk future completion"); // Tuinity
++            this.tickingFuture = playerchunkmap.a(this); this.tickingFuture.thenAccept((either) -> { // Paper - ensure main // Tuinity - always fired on main
++                com.tuinity.tuinity.util.TickThread.ensureTickThread("Async full chunk future completion"); // Tuinity
                  if (either.left().isPresent()) {
                      // note: Here is a very good place to add callbacks to logic waiting on this.
                      Chunk tickingChunk = either.left().get();

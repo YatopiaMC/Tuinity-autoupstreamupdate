@@ -977,7 +977,7 @@ index 45c142c227bc258bbd5c8c03c6012663dccf8f3f..d6f57ba9c40bb07bae9a575b8887b705
          PlayerChunk playerchunk = this.getChunk(k);
  
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 28e2d3f0a5e2ab084175bf0bba88816f80089799..20a5a664e5e6f38b1078a477cb8a129ddb68a265 100644
+index b845e488e3b9a4f19d1fcf169533046b7e72ba28..6eb392d317c678f8b87d93b2a9a93eacd5ed2e97 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -207,6 +207,14 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
@@ -1020,7 +1020,7 @@ index 7e00824a467dac011863c4c16f72856448d579d3..09599c78d40d35e9e4344a2a9bb39075
                  midTickLoadChunks(); // Paper
              } catch (Throwable throwable) {
 diff --git a/src/main/java/net/minecraft/server/PlayerChunk.java b/src/main/java/net/minecraft/server/PlayerChunk.java
-index 6ef71230ef8fac4d9bc2d48a433521d541027e96..26c4f40df8f31bae2ad0cf47de7f58930bb99914 100644
+index 11a67ca18f566bfc214659e7fb454ea2b4d8a7ad..ffa16930ade0fee788706955f340e03b09ec52cb 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunk.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunk.java
 @@ -504,6 +504,7 @@ public class PlayerChunk {
