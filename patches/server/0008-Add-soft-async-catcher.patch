@@ -148,10 +148,10 @@ index 033548a58d27f64d3954206d267783c0437d4019..08ed243259f052165c6f75aed1d1d65a
  
      public TickThread(final Runnable run, final String name, final int id) {
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 299d7d7a55532930e2d4340a6cfe77a5fd8a0a0c..9b8b856d7c23fd5ed1196fdce93381c16c7d28a7 100644
+index 083da88c1dd78b8ecdc8329c94430189cecb9d95..4919170037da25013b53a7c865ebec7a780956d5 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
-@@ -544,6 +544,7 @@ public class Chunk implements IChunkAccess {
+@@ -547,6 +547,7 @@ public class Chunk implements IChunkAccess {
  
      @Override
      public void a(Entity entity) {
@@ -159,7 +159,7 @@ index 299d7d7a55532930e2d4340a6cfe77a5fd8a0a0c..9b8b856d7c23fd5ed1196fdce93381c1
          this.q = true;
          int i = MathHelper.floor(entity.locX() / 16.0D);
          int j = MathHelper.floor(entity.locZ() / 16.0D);
-@@ -613,6 +614,7 @@ public class Chunk implements IChunkAccess {
+@@ -616,6 +617,7 @@ public class Chunk implements IChunkAccess {
      }
  
      public void a(Entity entity, int i) {
@@ -167,7 +167,7 @@ index 299d7d7a55532930e2d4340a6cfe77a5fd8a0a0c..9b8b856d7c23fd5ed1196fdce93381c1
          if (i < 0) {
              i = 0;
          }
-@@ -870,6 +872,7 @@ public class Chunk implements IChunkAccess {
+@@ -873,6 +875,7 @@ public class Chunk implements IChunkAccess {
      }
  
      public void a(@Nullable Entity entity, AxisAlignedBB axisalignedbb, List<Entity> list, @Nullable Predicate<? super Entity> predicate) {
@@ -175,7 +175,7 @@ index 299d7d7a55532930e2d4340a6cfe77a5fd8a0a0c..9b8b856d7c23fd5ed1196fdce93381c1
          int i = MathHelper.floor((axisalignedbb.minY - 2.0D) / 16.0D);
          int j = MathHelper.floor((axisalignedbb.maxY + 2.0D) / 16.0D);
  
-@@ -909,6 +912,7 @@ public class Chunk implements IChunkAccess {
+@@ -912,6 +915,7 @@ public class Chunk implements IChunkAccess {
      }
  
      public <T extends Entity> void a(@Nullable EntityTypes<?> entitytypes, AxisAlignedBB axisalignedbb, List<? super T> list, Predicate<? super T> predicate) {
@@ -183,7 +183,7 @@ index 299d7d7a55532930e2d4340a6cfe77a5fd8a0a0c..9b8b856d7c23fd5ed1196fdce93381c1
          int i = MathHelper.floor((axisalignedbb.minY - 2.0D) / 16.0D);
          int j = MathHelper.floor((axisalignedbb.maxY + 2.0D) / 16.0D);
  
-@@ -939,6 +943,7 @@ public class Chunk implements IChunkAccess {
+@@ -942,6 +946,7 @@ public class Chunk implements IChunkAccess {
      }
  
      public <T extends Entity> void a(Class<? extends T> oclass, AxisAlignedBB axisalignedbb, List<T> list, @Nullable Predicate<? super T> predicate) {
