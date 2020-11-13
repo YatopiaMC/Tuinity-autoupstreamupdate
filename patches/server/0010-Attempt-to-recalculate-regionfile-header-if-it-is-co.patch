@@ -55,7 +55,7 @@ index 582a5695bac7d078e3022b8ee70c512c0680d992..5601088cd5024a40e8296bab979f43de
          // Paper - nuke IOWorker
      }
 diff --git a/src/main/java/net/minecraft/server/RegionFile.java b/src/main/java/net/minecraft/server/RegionFile.java
-index 1751fb6934d9242e475c1a44b2a4a1ade6987766..1ffa213a819f9d39488ca3599f77e771de8081a5 100644
+index e969625d246f4657b4e802ac6a9d11e5c3b2e8c3..3dfd9151349527579c9d1900a95c4cc071a7446c 100644
 --- a/src/main/java/net/minecraft/server/RegionFile.java
 +++ b/src/main/java/net/minecraft/server/RegionFile.java
 @@ -5,6 +5,7 @@ import java.io.BufferedInputStream;
