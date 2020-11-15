@@ -203,7 +203,7 @@ index 630274a6e0dec83339ac03f25ebc0246ccd3df1e..2a8455b813853693e20f368d3ece78d9
      // Paper start - Chunk Prioritization
      public void queueHolderUpdate(PlayerChunk playerchunk) {
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index bf001271950b28f0261b935bf4e7363cac933040..f7103ec2a90a08b8a816f47a02c0f29ac34b2431 100644
+index c317fdb45bae859efbb33a39d4eb086f7c00abc5..6cb47160d57bc9cf513e7edb40a43bb95c5133f7 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -123,6 +123,34 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
