@@ -203,7 +203,7 @@ index 630274a6e0dec83339ac03f25ebc0246ccd3df1e..2a8455b813853693e20f368d3ece78d9
      // Paper start - Chunk Prioritization
      public void queueHolderUpdate(PlayerChunk playerchunk) {
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index c317fdb45bae859efbb33a39d4eb086f7c00abc5..6cb47160d57bc9cf513e7edb40a43bb95c5133f7 100644
+index e12bad3aaa2f9912330d2a1f68ffc590ed1431af..59abca0fd2330e1cdeda603d4146e4bb1afc3090 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -123,6 +123,34 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
@@ -240,7 +240,7 @@ index c317fdb45bae859efbb33a39d4eb086f7c00abc5..6cb47160d57bc9cf513e7edb40a43bb9
 +
      protected World(WorldDataMutable worlddatamutable, ResourceKey<World> resourcekey, final DimensionManager dimensionmanager, Supplier<GameProfilerFiller> supplier, boolean flag, boolean flag1, long i, org.bukkit.generator.ChunkGenerator gen, org.bukkit.World.Environment env, java.util.concurrent.Executor executor) { // Paper
          this.spigotConfig = new org.spigotmc.SpigotWorldConfig(((WorldDataServer) worlddatamutable).getName()); // Spigot
-         this.paperConfig = new com.destroystokyo.paper.PaperWorldConfig((((WorldDataServer)worlddatamutable).getName()), this.spigotConfig); // Paper
+         this.paperConfig = new com.destroystokyo.paper.PaperWorldConfig(((WorldDataServer) worlddatamutable).getName(), this.spigotConfig); // Paper
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
 index e9504241fcea63463bca1e7b6b7cabc0a6a4d375..2f4110311244daed64f4ffbd331692282c212344 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java

@@ -267,7 +267,7 @@ index 583f26af9c15d63addcd5657a0624ea926acc424..9846fb912cb421d0bcc79a3f63fdb5cf
                  // Spigot Start
                  CrashReport crashreport;
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 9cd3ceebfdeb9887a8c3379102cf8b76a8138fed..1748b6e51bb7dad5049613376c36fae9b2f211d2 100644
+index 5c4a70461324e4a5abafc79f2cb68d7fa80f8981..f61f6e21096d36dfd55460cd5580b257c2c63aba 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -898,6 +898,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {

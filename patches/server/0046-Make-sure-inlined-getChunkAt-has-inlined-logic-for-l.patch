@@ -13,7 +13,7 @@ Paper recently reverted this optimisation, so it's been reintroduced
 here.
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index af514cdc26b839caf8885f564f8d18af7ca91aed..f9014d3c60a49d162750109fb50d8bf2ed830c7a 100644
+index e10d0e5d060002daf85dd6d2a5d46422e82b2ef7..a4ba6be2b9dfc164379f561c6d7b36da4cf08242 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -289,6 +289,15 @@ public abstract class World implements GeneratorAccess, AutoCloseable {

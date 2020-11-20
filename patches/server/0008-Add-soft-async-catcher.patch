@@ -328,7 +328,7 @@ index 126ea76096375708e1b79dc497c89172371cdf51..49833d290e8533a93e03d805cf012bbf
  
          this.noTickViewDistance = viewDistance;
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 2f55d81c1e6ff5ec8083d9110ed3d2346b8c2662..9cd3ceebfdeb9887a8c3379102cf8b76a8138fed 100644
+index 389c22a59d8dcb307858bb2fbcf29d88c815e396..5c4a70461324e4a5abafc79f2cb68d7fa80f8981 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -363,6 +363,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
