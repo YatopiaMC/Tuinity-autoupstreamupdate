@@ -242,7 +242,7 @@ index e12bad3aaa2f9912330d2a1f68ffc590ed1431af..59abca0fd2330e1cdeda603d4146e4bb
          this.spigotConfig = new org.spigotmc.SpigotWorldConfig(((WorldDataServer) worlddatamutable).getName()); // Spigot
          this.paperConfig = new com.destroystokyo.paper.PaperWorldConfig(((WorldDataServer) worlddatamutable).getName(), this.spigotConfig); // Paper
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index e9504241fcea63463bca1e7b6b7cabc0a6a4d375..2f4110311244daed64f4ffbd331692282c212344 100644
+index 34cfad5921f028f6b02de251ea27d9095b1c9e3c..676c817a4bbf1034554f8a100822bf483dc89b67 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -300,6 +300,10 @@ public class WorldServer extends World implements GeneratorAccessSeed {
