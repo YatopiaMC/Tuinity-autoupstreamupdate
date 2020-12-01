@@ -2282,10 +2282,10 @@ index cebd808e273dbdb88feb16920dd7a2f60390b34f..33b8f4e0f09fdc41c8ea48b6ed77af19
      final com.destroystokyo.paper.util.maplist.IBlockDataList tickingList = new com.destroystokyo.paper.util.maplist.IBlockDataList(); // Paper
  
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 56677b8bf45af217c0a4a50fc7aea76ca012cbd7..7af096b6364df2b015a1f4f7bea9c4dec1660228 100644
+index 976c44c8eeecc513fa11de55b80317550f621407..27c368bf19292e1076e1990a1d733eeac33ec0f4 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -524,6 +524,174 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -525,6 +525,174 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                  }
              }
  
