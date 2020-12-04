@@ -5,10 +5,10 @@ Subject: [PATCH] Revert Temporarily-Revert-usage-of-Region-Manager
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 08518ff57b681595900df0e494fda352863dea35..fe4a7ed6fc67f41055a5167701b001874b41d0eb 100644
+index 92641ab892e52b250e6df2c97ceb67c1ea72223d..88c3b3f7ebba5ad84ee41ba04e38393b58ae4bf5 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -1418,7 +1418,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1415,7 +1415,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                  // Tuinity - replace logic
                  worldserver.timings.doTick.startTiming(); // Spigot
                  worldserver.doTick(booleansupplier);

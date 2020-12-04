@@ -37,7 +37,7 @@ by 2x. According to cpu time, the light engine itself spent 10x less time
 lighting chunks for generation.
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperCommand.java b/src/main/java/com/destroystokyo/paper/PaperCommand.java
-index d798de637389cc5d5289a6c75304de307b01f493..a4602ebaa20c174602786182c2093f12b436e3ef 100644
+index ad6b15f401ce7493a2a247e2a2af23f73ade02ca..c9e3a0c8742caeef85c429861cf4b7f2b470ed51 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperCommand.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperCommand.java
 @@ -225,8 +225,20 @@ public class PaperCommand extends Command {
