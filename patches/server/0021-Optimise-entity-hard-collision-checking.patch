@@ -150,10 +150,10 @@ index 993e315cd6e5b42f90a305429af5b407869d4a29..12b6894419b9b34a6b48f3bf7559530b
      }
  
 diff --git a/src/main/java/net/minecraft/server/IEntityAccess.java b/src/main/java/net/minecraft/server/IEntityAccess.java
-index 07dbdd560909c8ef64740d82f02bae3d67119ab9..70cb1d89ec587c4e6c770cf14f4bea7a7602e7dc 100644
+index 2639c17b7f6100533f33124f9e49990cd303d161..b053bb74f6df174a27dbfd7b1b3e3ccbb0b26659 100644
 --- a/src/main/java/net/minecraft/server/IEntityAccess.java
 +++ b/src/main/java/net/minecraft/server/IEntityAccess.java
-@@ -52,16 +52,25 @@ public interface IEntityAccess {
+@@ -55,16 +55,25 @@ public interface IEntityAccess {
          return this.b(oclass, axisalignedbb, IEntitySelector.g);
      }
  
@@ -181,7 +181,7 @@ index 07dbdd560909c8ef64740d82f02bae3d67119ab9..70cb1d89ec587c4e6c770cf14f4bea7a
                      label25:
                      {
                          if (entity == null) {
-@@ -79,7 +88,7 @@ public interface IEntityAccess {
+@@ -82,7 +91,7 @@ public interface IEntityAccess {
  
                  flag = false;
                  return flag;
