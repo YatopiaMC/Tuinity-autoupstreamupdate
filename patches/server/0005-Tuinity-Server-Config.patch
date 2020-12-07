@@ -274,13 +274,13 @@ index 5504facd2e453238caa71d98743be5416d4dd4fe..fcba187bbdc1b468cfea2bc922187d9b
          this.setPVP(dedicatedserverproperties.pvp);
          this.setAllowFlight(dedicatedserverproperties.allowFlight);
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index a803452cc220c8c3269bca5f8ffdf1a90cee7c2f..3c6c510c71a289dad4631d820cfb3ed58d13111f 100644
+index a3a93da4fbc2fe91c520ebb85b939e24f1091fa8..864516a5d20b3154095cc9bf36d64ca2fe581c58 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -953,6 +953,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+                 // Paper end
  
-                 com.destroystokyo.paper.util.PaperJvmChecker.checkJvm(); // Paper jvm version nag
- 
+                 PaperJvmChecker.checkJvm(); // Paper jvm version nag
 +                com.tuinity.tuinity.config.TuinityConfig.createWorldSections = false; // Tuinity - don't let plugin created worlds fill our config
                  org.spigotmc.WatchdogThread.tick(); // Paper
                  org.spigotmc.WatchdogThread.hasStarted = true; // Paper
@@ -307,7 +307,7 @@ index 9ed21f434c5fb019b74dfe9ee0b802ccc5c07fd8..389c22a59d8dcb307858bb2fbcf29d88
          this.world = new CraftWorld((WorldServer) this, gen, env);
          this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 9e82461f24869428786b359e94edddc98ff3d3e4..f66ad536fa93c28fe37beaad5c4def81af2a7cbe 100644
+index 1ddf8831d92cb60589ac6e9f150bb7e1ed3ea49b..ba0ac5733779546cfb5f5f71e70d4aa55b5d25d4 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -856,6 +856,7 @@ public final class CraftServer implements Server {
@@ -326,7 +326,7 @@ index 9e82461f24869428786b359e94edddc98ff3d3e4..f66ad536fa93c28fe37beaad5c4def81
          }
  
          Plugin[] pluginClone = pluginManager.getPlugins().clone(); // Paper
-@@ -2272,6 +2274,14 @@ public final class CraftServer implements Server {
+@@ -2275,6 +2277,14 @@ public final class CraftServer implements Server {
              return com.destroystokyo.paper.PaperConfig.config;
          }
  

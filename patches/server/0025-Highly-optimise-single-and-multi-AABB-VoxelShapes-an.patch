@@ -842,10 +842,10 @@ index 25e54a1fadc5d31fb250a3f47524b4f345fc8cc6..b66c802d5e27518069bf42e577bcc9a2
          return this.d(entity, axisalignedbb, predicate).allMatch(VoxelShape::isEmpty);
          } finally { if (entity != null) entity.collisionLoadChunks = false; } // Paper
 diff --git a/src/main/java/net/minecraft/server/IEntityAccess.java b/src/main/java/net/minecraft/server/IEntityAccess.java
-index 70cb1d89ec587c4e6c770cf14f4bea7a7602e7dc..150daa725a4b77b9f10c56a1ce5c0eaf30c2b2d5 100644
+index b053bb74f6df174a27dbfd7b1b3e3ccbb0b26659..64b59b17d28803f510b8b088ebafe446c450d486 100644
 --- a/src/main/java/net/minecraft/server/IEntityAccess.java
 +++ b/src/main/java/net/minecraft/server/IEntityAccess.java
-@@ -67,7 +67,8 @@ public interface IEntityAccess {
+@@ -70,7 +70,8 @@ public interface IEntityAccess {
          } else {
              AxisAlignedBB axisalignedbb1 = axisalignedbb.g(1.0E-7D);
  
@@ -868,7 +868,7 @@ index ff74be14512a947e81b62d53e616131ca7d7f609..653ba0f1d84af1997d768426d3542c9d
          0, 2, 60L, TimeUnit.SECONDS,
          new LinkedBlockingQueue<Runnable>(),
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 222734a302c4004eb3c062310d56fb915702df18..88c3b3f7ebba5ad84ee41ba04e38393b58ae4bf5 100644
+index b578cb63426e4352bff3437a8cc1e9fe59460959..db624a2c76f040561834d5397b732f2802991300 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1322,6 +1322,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
