@@ -5,7 +5,7 @@ Subject: [PATCH] Reduce allocation rate from crammed entities
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index b88bd19fc3ebaf3ae467b5ad35a155505db77e6c..a0916a88364a71376432be2597dbf94912a446eb 100644
+index b88bd19fc3ebaf3ae467b5ad35a155505db77e6c..c57e7e1bccfc3a0cccfbaca44d9f369ec1f5683c 100644
 --- a/src/main/java/net/minecraft/server/EntityLiving.java
 +++ b/src/main/java/net/minecraft/server/EntityLiving.java
 @@ -2846,7 +2846,11 @@ public abstract class EntityLiving extends Entity {
@@ -15,7 +15,7 @@ index b88bd19fc3ebaf3ae467b5ad35a155505db77e6c..a0916a88364a71376432be2597dbf949
 -        List<Entity> list = this.world.getEntities(this, this.getBoundingBox(), IEntitySelector.pushable(this, world.paperConfig.fixClimbingBypassingCrammingRule)); // Paper - fix climbing bypassing cramming rule
 +        // Tuinity start - reduce memory allocation from collideNearby
 +        List<Entity> list = com.tuinity.tuinity.util.CachedLists.getTempGetEntitiesList();
-+        this.world.getEntities(this, this.getBoundingBox(), IEntitySelector.pushable(this, world.paperConfig.fixClimbingBypassingCrammingRule), list);
++        this.world.getEntities(this, this.getBoundingBox(), IEntitySelector.pushable(this, world.paperConfig.fixClimbingBypassingCrammingRule), list); // Paper - fix climbing bypassing cramming rule
 +        try {
 +        // Tuinity end - reduce memory allocation from collideNearby
  
