@@ -435,10 +435,10 @@ index 0000000000000000000000000000000000000000..6cae16cc32c49d1787b18f3f51788fe4
 +}
 diff --git a/src/main/java/com/tuinity/tuinity/chunk/light/SkyStarLightEngine.java b/src/main/java/com/tuinity/tuinity/chunk/light/SkyStarLightEngine.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e780ae852a45916d5536b11df22886477daf1495
+index 0000000000000000000000000000000000000000..055f2e1a469830294767af8eb733e998d54596a5
 --- /dev/null
 +++ b/src/main/java/com/tuinity/tuinity/chunk/light/SkyStarLightEngine.java
-@@ -0,0 +1,357 @@
+@@ -0,0 +1,365 @@
 +package com.tuinity.tuinity.chunk.light;
 +
 +import net.minecraft.server.BlockPosition;
@@ -699,7 +699,15 @@ index 0000000000000000000000000000000000000000..e780ae852a45916d5536b11df2288647
 +            final int startY = highestNonEmptySection << 4 | 15;
 +            for (int currZ = minZ; currZ <= maxZ; ++currZ) {
 +                for (int currX = minX; currX <= maxX; ++currX) {
-+                    this.tryPropagateSkylight(world, currX, startY, currZ);
++                    final int end = this.tryPropagateSkylight(world, currX, startY, currZ);
++                    if (end == startY) {
++                        // we need to propagate this one ourselves.
++                        this.increaseQueue[this.increaseQueueInitialLength++] = (currX + (currZ << 6) + (startY << (6 + 6)) + this.coordinateOffset) |
++                                (15 << (6 + 6 + 9)) | // we know we're at full lit here
++                                ((Direction.NEGATIVE_Y.ordinal()) << (6 + 6 + 9 + 4)); // no need to check upwards, we know it's 15.
++                                // we know this block is air because the section is empty, so it's obviously not sidedly
++                                // transparent.
++                    }
 +                }
 +            }
 +        } // else: apparently the chunk is empty
@@ -2099,7 +2107,7 @@ index 2760b377d1f68ac5f66e7274317379e2dda8288a..829d4a7508e1656dbdc912096b7eafcf
              protected final boolean c;
              private final boolean[] j;
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index f3702ed75ebcd78075da947acf9bdc2ec0379180..96bdb95800f337f49d5194fb8d3b32b808a978ca 100644
+index 2b3a1ad11707ec495a37d7e6e84dcaf96b49b310..e5169c5c7a71566c22c5b3c4686e56ee65816e53 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
 @@ -140,6 +140,30 @@ public class Chunk implements IChunkAccess {

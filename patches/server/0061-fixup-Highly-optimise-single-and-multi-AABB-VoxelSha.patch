@@ -110,7 +110,7 @@ index 829d4a7508e1656dbdc912096b7eafcf30cbb5b2..4d1ac4e6b61897fc03b091475ef7be3e
          }
  
 diff --git a/src/main/java/net/minecraft/server/ChunkCache.java b/src/main/java/net/minecraft/server/ChunkCache.java
-index e95fc7d98b70c84f3bf94440da977deb2d541e46..831aaffaa14fba0a7c464a05678ceb0f7f930214 100644
+index e95fc7d98b70c84f3bf94440da977deb2d541e46..187a639347413a3aef1b6025926e2bf5936c11fd 100644
 --- a/src/main/java/net/minecraft/server/ChunkCache.java
 +++ b/src/main/java/net/minecraft/server/ChunkCache.java
 @@ -1,5 +1,6 @@
@@ -225,12 +225,12 @@ index e95fc7d98b70c84f3bf94440da977deb2d541e46..831aaffaa14fba0a7c464a05678ceb0f
 -                                edgeCountFull = edgeCountZY;
 -                            }
 +                    boolean sectionHasSpecial = section.hasSpecialCollidingBlocks();
-+                    if (sectionHasSpecial && currChunkX == minChunkX) {
++                    if (!sectionHasSpecial && currChunkX == minChunkX) {
 +                        minXIterate = minX + 1;
 +                    } else {
 +                        minXIterate = minX;
 +                    }
-+                    if (sectionHasSpecial && currChunkX == maxChunkX) {
++                    if (!sectionHasSpecial && currChunkX == maxChunkX) {
 +                        maxXIterate = maxX - 1;
 +                    } else {
 +                        maxXIterate = maxX;
@@ -239,12 +239,12 @@ index e95fc7d98b70c84f3bf94440da977deb2d541e46..831aaffaa14fba0a7c464a05678ceb0f
 -                            if (edgeCountFull == 3) {
 -                                continue;
 -                            }
-+                    if (sectionHasSpecial && currChunkZ == minChunkZ) {
++                    if (!sectionHasSpecial && currChunkZ == minChunkZ) {
 +                        minZIterate = minZ + 1;
 +                    } else {
 +                        minZIterate = minZ;
 +                    }
-+                    if (sectionHasSpecial && currChunkZ == maxChunkZ) {
++                    if (!sectionHasSpecial && currChunkZ == maxChunkZ) {
 +                        maxZIterate = maxZ - 1;
 +                    } else {
 +                        maxZIterate = maxZ;
@@ -417,7 +417,7 @@ index 33b8f4e0f09fdc41c8ea48b6ed77af199136ab92..ea943e44abb0ea9f7d471070fee14f6e
  
              if (!iblockdata.isAir()) {
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 66ba315e3bf059140d941a39bb5cb4728c946f6f..8fdfec3b8ecde8e68c8b8444bedca144a737bd21 100644
+index cecb6dc569d2bff61904513eb3dccfa6c757560e..d93db1049ef9421f6b3edd0dc52a421c4d1b51c2 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -785,7 +785,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
@@ -672,7 +672,7 @@ index db735e29d427cc8f4bd4ba54c7a44daf9fed9e61..636bbbc42466cb54c300352f400464fe
      }
  
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 676c817a4bbf1034554f8a100822bf483dc89b67..928f2d0308c78cd1e8662d0d701141c196a1d0cb 100644
+index 676c817a4bbf1034554f8a100822bf483dc89b67..cd7ebe40cf69994b9658ee18f8366bf42225dd71 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -365,248 +365,15 @@ public class WorldServer extends World implements GeneratorAccessSeed {
@@ -1024,12 +1024,12 @@ index 676c817a4bbf1034554f8a100822bf483dc89b67..928f2d0308c78cd1e8662d0d701141c1
 -                                edgeCountFull = edgeCountZY;
 -                            }
 +                    boolean sectionHasSpecial = section.hasSpecialCollidingBlocks();
-+                    if (sectionHasSpecial && currChunkX == minChunkX) {
++                    if (!sectionHasSpecial && currChunkX == minChunkX) {
 +                        minXIterate = minX + 1;
 +                    } else {
 +                        minXIterate = minX;
 +                    }
-+                    if (sectionHasSpecial && currChunkX == maxChunkX) {
++                    if (!sectionHasSpecial && currChunkX == maxChunkX) {
 +                        maxXIterate = maxX - 1;
 +                    } else {
 +                        maxXIterate = maxX;
@@ -1038,12 +1038,12 @@ index 676c817a4bbf1034554f8a100822bf483dc89b67..928f2d0308c78cd1e8662d0d701141c1
 -                            if (edgeCountFull == 3) {
 -                                continue;
 -                            }
-+                    if (sectionHasSpecial && currChunkZ == minChunkZ) {
++                    if (!sectionHasSpecial && currChunkZ == minChunkZ) {
 +                        minZIterate = minZ + 1;
 +                    } else {
 +                        minZIterate = minZ;
 +                    }
-+                    if (sectionHasSpecial && currChunkZ == maxChunkZ) {
++                    if (!sectionHasSpecial && currChunkZ == maxChunkZ) {
 +                        maxZIterate = maxZ - 1;
 +                    } else {
 +                        maxZIterate = maxZ;
