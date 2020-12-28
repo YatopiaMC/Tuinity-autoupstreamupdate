@@ -7,7 +7,7 @@ Subject: [PATCH] Detail more information in watchdog dumps
 - Dump player name, player uuid, position, and world for packet handling
 
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 08b901c247e588caaad0579c3f9c656c9a22083e..993e315cd6e5b42f90a305429af5b407869d4a29 100644
+index 4fc96ef8c6062d94fb58aa274e9050235dcb1b9b..56db744999c1b3938b7db0a4fc3c924446dbd2c9 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -599,7 +599,39 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
@@ -64,7 +64,7 @@ index 08b901c247e588caaad0579c3f9c656c9a22083e..993e315cd6e5b42f90a305429af5b407
      }
  
      protected BlockPosition ap() {
-@@ -3308,12 +3347,16 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -3309,12 +3348,16 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
          return this.locBlock;
      }
  
@@ -81,7 +81,7 @@ index 08b901c247e588caaad0579c3f9c656c9a22083e..993e315cd6e5b42f90a305429af5b407
      }
  
      public void setMot(double d0, double d1, double d2) {
-@@ -3368,7 +3411,9 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -3369,7 +3412,9 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
          }
          // Paper end
          if (this.loc.x != d0 || this.loc.y != d1 || this.loc.z != d2) {
