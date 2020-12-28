@@ -65,10 +65,10 @@ index 688ed756d7128d1a5d1107f390cf0ea1615df27d..a498975d88fc7144b6f20aca97127118
  
          @Override
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index cd7ebe40cf69994b9658ee18f8366bf42225dd71..800471d450ddcb8d291dc72e93c3d8251cc63248 100644
+index c15a5edbe4586944aaed3fb64c5d6da7834e34fc..8d8385e3022dd84e2b92daeffa190dbda60c705b 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -917,6 +917,15 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -857,6 +857,15 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  gameprofilerfiller.enter("checkDespawn");
                  if (!entity.dead) {
                      entity.checkDespawn();
@@ -84,7 +84,7 @@ index cd7ebe40cf69994b9658ee18f8366bf42225dd71..800471d450ddcb8d291dc72e93c3d825
                  }
  
                  gameprofilerfiller.exit();
-@@ -939,7 +948,14 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -879,7 +888,14 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                      this.removeEntityFromChunk(entity);
                      this.entitiesById.remove(entity.getId()); // Tuinity
                      this.unregisterEntity(entity);
@@ -99,7 +99,7 @@ index cd7ebe40cf69994b9658ee18f8366bf42225dd71..800471d450ddcb8d291dc72e93c3d825
  
                  gameprofilerfiller.exit();
              }
-@@ -1348,6 +1364,12 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1288,6 +1304,12 @@ public class WorldServer extends World implements GeneratorAccessSeed {
              int i = MathHelper.floor(entity.locX() / 16.0D);
              int j =  Math.min(15, Math.max(0, MathHelper.floor(entity.locY() / 16.0D))); // Paper - stay consistent with chunk add/remove behavior
              int k = MathHelper.floor(entity.locZ() / 16.0D);
@@ -112,7 +112,7 @@ index cd7ebe40cf69994b9658ee18f8366bf42225dd71..800471d450ddcb8d291dc72e93c3d825
  
              if (!entity.inChunk || entity.chunkX != i || entity.chunkY != j || entity.chunkZ != k) {
                  // Paper start - remove entity if its in a chunk more correctly.
-@@ -1357,6 +1379,12 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1297,6 +1319,12 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  }
                  // Paper end
  
@@ -125,7 +125,7 @@ index cd7ebe40cf69994b9658ee18f8366bf42225dd71..800471d450ddcb8d291dc72e93c3d825
                  if (entity.inChunk && this.isChunkLoaded(entity.chunkX, entity.chunkZ)) {
                      this.getChunkAt(entity.chunkX, entity.chunkZ).a(entity, entity.chunkY);
                  }
-@@ -1370,6 +1398,11 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1310,6 +1338,11 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  } else {
                      this.getChunkAt(i, k).a(entity);
                  }
@@ -137,7 +137,7 @@ index cd7ebe40cf69994b9658ee18f8366bf42225dd71..800471d450ddcb8d291dc72e93c3d825
              }
  
              this.getMethodProfiler().exit();
-@@ -1832,9 +1865,96 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1772,9 +1805,96 @@ public class WorldServer extends World implements GeneratorAccessSeed {
              // Tuinity end
          }
          new com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent(entity.getBukkitEntity()).callEvent(); // Paper - fire while valid
@@ -234,7 +234,7 @@ index cd7ebe40cf69994b9658ee18f8366bf42225dd71..800471d450ddcb8d291dc72e93c3d825
      private void registerEntity(Entity entity) {
          org.spigotmc.AsyncCatcher.catchOp("entity register"); // Spigot
          // Paper start - don't double enqueue entity registration
-@@ -2014,9 +2134,25 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1954,9 +2074,25 @@ public class WorldServer extends World implements GeneratorAccessSeed {
          VoxelShape voxelshape1 = iblockdata1.getCollisionShape(this, blockposition);
  
          if (VoxelShapes.c(voxelshape, voxelshape1, OperatorBoolean.NOT_SAME)) {
@@ -261,7 +261,7 @@ index cd7ebe40cf69994b9658ee18f8366bf42225dd71..800471d450ddcb8d291dc72e93c3d825
              try { // Tuinity end
  
              while (iterator.hasNext()) {
-@@ -2025,10 +2161,21 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -1965,10 +2101,21 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  if (!navigationabstract.i()) {
                      navigationabstract.b(blockposition);
                  }
