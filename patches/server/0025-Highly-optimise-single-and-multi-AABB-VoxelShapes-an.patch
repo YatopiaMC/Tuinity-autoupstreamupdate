@@ -1238,10 +1238,10 @@ index 9f4f9df09968dc45878ad59f5ee45672a3f08fbd..db735e29d427cc8f4bd4ba54c7a44daf
  
      @VisibleForTesting
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 0cec0c483aeb551a7be58b3e765aac491aeed5fc..e10d0e5d060002daf85dd6d2a5d46422e82b2ef7 100644
+index 7c7170531578858724cad5905e47cd84401e288e..f3bb6aaa916d11b9326b556b772ef9699fb4c1e2 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -1113,8 +1113,13 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -1115,8 +1115,13 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
  
      @Override
      public List<Entity> getEntities(@Nullable Entity entity, AxisAlignedBB axisalignedbb, @Nullable Predicate<? super Entity> predicate) {
