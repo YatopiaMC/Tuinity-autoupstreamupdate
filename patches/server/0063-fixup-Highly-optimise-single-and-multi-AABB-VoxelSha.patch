@@ -473,10 +473,10 @@ index db735e29d427cc8f4bd4ba54c7a44daf9fed9e61..636bbbc42466cb54c300352f400464fe
      }
  
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 676c817a4bbf1034554f8a100822bf483dc89b67..c15a5edbe4586944aaed3fb64c5d6da7834e34fc 100644
+index e70fb45c051d423e50adadbe0100e16c46f50f5f..7788cd525cb20f78533e8335f062342ffe09cb6e 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -365,248 +365,15 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -372,248 +372,15 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      }
  
      // Tuinity start - optimise collision
@@ -732,7 +732,7 @@ index 676c817a4bbf1034554f8a100822bf483dc89b67..c15a5edbe4586944aaed3fb64c5d6da7
      }
  
      public final boolean hardCollidesWithAnyEntities(@Nullable Entity entity, AxisAlignedBB axisalignedbb, @Nullable Predicate<Entity> predicate) {
-@@ -641,13 +408,24 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -648,13 +415,24 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      }
  
      public final boolean hasAnyCollisions(@Nullable Entity entity, AxisAlignedBB axisalignedbb, boolean loadChunks) {
@@ -760,7 +760,7 @@ index 676c817a4bbf1034554f8a100822bf483dc89b67..c15a5edbe4586944aaed3fb64c5d6da7
              }
          }
  
-@@ -662,12 +440,12 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -669,12 +447,12 @@ public class WorldServer extends World implements GeneratorAccessSeed {
  
  
          BlockPosition.MutableBlockPosition mutablePos = new BlockPosition.MutableBlockPosition();
@@ -775,7 +775,7 @@ index 676c817a4bbf1034554f8a100822bf483dc89b67..c15a5edbe4586944aaed3fb64c5d6da7
          }
  
          int minYIterate = Math.max(0, minBlockY);
-@@ -695,7 +473,14 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -702,7 +480,14 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  Chunk chunk = loadChunks ? chunkProvider.getChunkAt(currChunkX, currChunkZ, true) : chunkProvider.getChunkAtIfLoadedImmediately(currChunkX, currChunkZ);
  
                  if (chunk == null) {
@@ -791,7 +791,7 @@ index 676c817a4bbf1034554f8a100822bf483dc89b67..c15a5edbe4586944aaed3fb64c5d6da7
                      continue;
                  }
  
-@@ -713,45 +498,43 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -720,45 +505,43 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                      }
  
                      DataPaletteBlock<IBlockData> blocks = section.blockIds;
@@ -864,7 +864,7 @@ index 676c817a4bbf1034554f8a100822bf483dc89b67..c15a5edbe4586944aaed3fb64c5d6da7
                                  }
                              }
                          }
-@@ -759,6 +542,8 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -766,6 +549,8 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  }
              }
          }
@@ -873,7 +873,7 @@ index 676c817a4bbf1034554f8a100822bf483dc89b67..c15a5edbe4586944aaed3fb64c5d6da7
      }
  
      public final void getEntityHardCollisions(@Nullable Entity entity, AxisAlignedBB axisalignedbb, @Nullable Predicate<Entity> predicate, List<AxisAlignedBB> list) {
-@@ -778,7 +563,9 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -785,7 +570,9 @@ public class WorldServer extends World implements GeneratorAccessSeed {
                  Entity otherEntity = entities.get(i);
  
                  if ((entity == null || otherEntity.collisionBoxIsHard()) || entity.hardCollidesWith(otherEntity)) {
@@ -884,7 +884,7 @@ index 676c817a4bbf1034554f8a100822bf483dc89b67..c15a5edbe4586944aaed3fb64c5d6da7
                  }
              }
          } finally {
-@@ -787,10 +574,15 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -794,10 +581,15 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      }
  
      public final void getCollisions(@Nullable Entity entity, AxisAlignedBB axisalignedbb, List<AxisAlignedBB> list, boolean loadChunks) {
@@ -901,7 +901,7 @@ index 676c817a4bbf1034554f8a100822bf483dc89b67..c15a5edbe4586944aaed3fb64c5d6da7
      @Override
      public boolean getCubes(Entity entity) {
          return !this.hasAnyCollisions(entity, entity.getBoundingBox());
-@@ -805,7 +597,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
+@@ -812,7 +604,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
      @Override
      public boolean getCubes(@Nullable Entity entity, AxisAlignedBB axisalignedbb, Predicate<Entity> predicate) {
          if (entity instanceof EntityArmorStand && !entity.world.paperConfig.armorStandEntityLookups) return false;
