@@ -37,23 +37,19 @@ by 2x. According to cpu time, the light engine itself spent 10x less time
 lighting chunks for generation.
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperCommand.java b/src/main/java/com/destroystokyo/paper/PaperCommand.java
-index ad6b15f401ce7493a2a247e2a2af23f73ade02ca..ead20b6b95780859b628f917e29e390970228178 100644
+index ad6b15f401ce7493a2a247e2a2af23f73ade02ca..95aaf9adb88e2a7d299fa27340206b3139e9526a 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperCommand.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperCommand.java
-@@ -182,6 +182,68 @@ public class PaperCommand extends Command {
+@@ -182,6 +182,44 @@ public class PaperCommand extends Command {
          }
      }
  
-+    private long relightCounter;
-+
 +    private void starlightFixLight(EntityPlayer sender, WorldServer world, LightEngineThreaded lightengine, int radius) {
 +        long start = System.nanoTime();
 +        LinkedHashSet<ChunkCoordIntPair> chunks = new LinkedHashSet<>(MCUtil.getSpiralOutChunks(sender.getChunkCoordinates(), radius)); // getChunkCoordinates is actually just bad mappings, this function rets position as blockpos
 +
-+        // add tickets
-+        Map<ChunkCoordIntPair, Long> ticketIds = new HashMap<>();
-+        int[] totalChunks = new int[1];
-+        for (Iterator<ChunkCoordIntPair> iterator = chunks.iterator(); iterator.hasNext();) {
++        int[] pending = new int[1];
++        for (java.util.Iterator<ChunkCoordIntPair> iterator = chunks.iterator(); iterator.hasNext();) {
 +            final ChunkCoordIntPair chunkPos = iterator.next();
 +
 +            final IChunkAccess chunk = world.getChunkProvider().getChunkAtImmediately(chunkPos.x, chunkPos.z);
@@ -63,53 +59,42 @@ index ad6b15f401ce7493a2a247e2a2af23f73ade02ca..ead20b6b95780859b628f917e29e3909
 +                continue;
 +            }
 +
-+            final Long id = Long.valueOf(this.relightCounter++);
-+
-+            world.getChunkProvider().addTicketAtLevel(TicketType.CHUNK_RELIGHT, chunkPos, MCUtil.getTicketLevelFor(ChunkStatus.LIGHT), id);
-+            ticketIds.put(chunkPos, id);
-+
-+            ++totalChunks[0];
++            ++pending[0];
 +        }
 +
-+        sender.getBukkitEntity().sendMessage(ChatColor.BLUE + "Relighting " + ChatColor.DARK_AQUA + totalChunks[0] + ChatColor.BLUE + " chunks");
-+
 +        int[] relitChunks = new int[1];
-+
-+        Set<ChunkCoordIntPair> blockLightDone = new HashSet<>();
-+
-+        final java.util.function.Consumer<ChunkCoordIntPair> callback = (ChunkCoordIntPair chunkPos) -> {
-+            if (blockLightDone.add(chunkPos)) {
-+                return;
-+            }
-+            ++relitChunks[0];
-+            sender.getBukkitEntity().sendMessage(
-+                    ChatColor.BLUE + "Relit chunk " + ChatColor.DARK_AQUA + chunkPos + ChatColor.BLUE +
-+                    ", progress: " + ChatColor.DARK_AQUA + (int)(Math.round(100.0 * (double)(relitChunks[0])/(double)totalChunks[0])) + "%"
-+            );
-+
-+            ((java.util.concurrent.Executor)world.getChunkProvider().serverThreadQueue).execute(() -> {
-+                world.getChunkProvider().playerChunkMap.getUpdatingChunk(chunkPos.pair()).sendPacketToTrackedPlayers(new PacketPlayOutLightUpdate(chunkPos, lightengine, true), false);
-+                world.getChunkProvider().removeTicketAtLevel(TicketType.CHUNK_RELIGHT, chunkPos, MCUtil.getTicketLevelFor(ChunkStatus.LIGHT), ticketIds.get(chunkPos));
-+            });
-+
-+            if (relitChunks[0] == totalChunks[0]) {
-+                final long end = System.nanoTime();
-+                final long diff = Math.round(1.0e-6*(end - start));
-+                sender.getBukkitEntity().sendMessage(
-+                        ChatColor.BLUE + "Relit " + ChatColor.DARK_AQUA + totalChunks[0] + ChatColor.BLUE + " chunks. Took " +
-+                        ChatColor.DARK_AQUA + diff + "ms"
-+                );
-+            }
-+        };
-+
-+        lightengine.relight(chunks, callback);
-+        lightengine.queueUpdate();
++        lightengine.relight(chunks,
++                (ChunkCoordIntPair chunkPos) -> {
++                    ++relitChunks[0];
++                    sender.getBukkitEntity().sendMessage(
++                            ChatColor.BLUE + "Relit chunk " + ChatColor.DARK_AQUA + chunkPos + ChatColor.BLUE +
++                                    ", progress: " + ChatColor.DARK_AQUA + (int)(Math.round(100.0 * (double)(relitChunks[0])/(double)pending[0])) + "%"
++                    );
++                },
++                (int totalRelit) -> {
++                    final long end = System.nanoTime();
++                    final long diff = Math.round(1.0e-6*(end - start));
++                    sender.getBukkitEntity().sendMessage(
++                            ChatColor.BLUE + "Relit " + ChatColor.DARK_AQUA + totalRelit + ChatColor.BLUE + " chunks. Took " +
++                                    ChatColor.DARK_AQUA + diff + "ms"
++                    );
++                });
++        sender.getBukkitEntity().sendMessage(ChatColor.BLUE + "Relighting " + ChatColor.DARK_AQUA + pending[0] + ChatColor.BLUE + " chunks");
 +    }
 +
      private void doFixLight(CommandSender sender, String[] args) {
          if (!(sender instanceof Player)) {
              sender.sendMessage("Only players can use this command");
-@@ -203,6 +265,13 @@ public class PaperCommand extends Command {
+@@ -190,7 +228,7 @@ public class PaperCommand extends Command {
+         int radius = 2;
+         if (args.length > 1) {
+             try {
+-                radius = Math.min(5, Integer.parseInt(args[1]));
++                radius = Math.min(15, Integer.parseInt(args[1])); // Tuinity - MOOOOOORE
+             } catch (Exception e) {
+                 sender.sendMessage("Not a number");
+                 return;
+@@ -203,6 +241,13 @@ public class PaperCommand extends Command {
          net.minecraft.server.WorldServer world = (WorldServer) handle.world;
          LightEngineThreaded lightengine = world.getChunkProvider().getLightEngine();
  
@@ -125,10 +110,10 @@ index ad6b15f401ce7493a2a247e2a2af23f73ade02ca..ead20b6b95780859b628f917e29e3909
          updateLight(sender, world, lightengine, queue);
 diff --git a/src/main/java/com/tuinity/tuinity/chunk/light/BlockStarLightEngine.java b/src/main/java/com/tuinity/tuinity/chunk/light/BlockStarLightEngine.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..80773f755b16c755bdf9f8f804011c8e8d9b6221
+index 0000000000000000000000000000000000000000..297ba951a5bdef70312d1dc2f243f0716760d04c
 --- /dev/null
 +++ b/src/main/java/com/tuinity/tuinity/chunk/light/BlockStarLightEngine.java
-@@ -0,0 +1,176 @@
+@@ -0,0 +1,185 @@
 +package com.tuinity.tuinity.chunk.light;
 +
 +import net.minecraft.server.BlockPosition;
@@ -140,6 +125,7 @@ index 0000000000000000000000000000000000000000..80773f755b16c755bdf9f8f804011c8e
 +import net.minecraft.server.IChunkAccess;
 +import net.minecraft.server.ILightAccess;
 +import net.minecraft.server.ProtoChunkExtension;
++import net.minecraft.server.World;
 +import net.minecraft.server.WorldServer;
 +import java.util.ArrayList;
 +import java.util.HashSet;
@@ -149,9 +135,17 @@ index 0000000000000000000000000000000000000000..80773f755b16c755bdf9f8f804011c8e
 +
 +public final class BlockStarLightEngine extends StarLightEngine {
 +
-+    public BlockStarLightEngine(final boolean isClientSide) {
-+        super(false, isClientSide);
++    public BlockStarLightEngine(final World world) {
++        super(false, world);
 +    }
++
++    @Override
++    protected boolean[] getEmptinessMap(final IChunkAccess chunk) {
++        return null;
++    }
++
++    @Override
++    protected void setEmptinessMap(final IChunkAccess chunk, final boolean[] to) {}
 +
 +    @Override
 +    protected SWMRNibbleArray[] getNibblesOnChunk(final IChunkAccess chunk) {
@@ -169,13 +163,10 @@ index 0000000000000000000000000000000000000000..80773f755b16c755bdf9f8f804011c8e
 +    }
 +
 +    @Override
-+    protected boolean[][] getEmptinessMap(IChunkAccess chunk) {
++    protected boolean[] handleEmptySectionChanges(final ILightAccess lightAccess, final IChunkAccess chunk,
++                                                  final Boolean[] emptinessChanges, final boolean unlit) {
 +        return null;
 +    }
-+
-+    @Override
-+    protected void handleEmptySectionChanges(final ILightAccess lightAccess, final IChunkAccess chunk,
-+                                             final Boolean[] emptinessChanges, final boolean unlit) {}
 +
 +    @Override
 +    protected final void checkBlock(final ILightAccess lightAccess, final int worldX, final int worldY, final int worldZ) {
@@ -194,23 +185,25 @@ index 0000000000000000000000000000000000000000..80773f755b16c755bdf9f8f804011c8e
 +        this.setLightLevel(worldX, worldY, worldZ, emittedLevel);
 +        // this accounts for change in emitted light that would cause an increase
 +        if (emittedLevel != 0) {
-+            this.increaseQueue[this.increaseQueueInitialLength++] =
++            this.appendToIncreaseQueue(
 +                    ((worldX + (worldZ << 6) + (worldY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                            | (emittedLevel & 0xFL) << (6 + 6 + 16)
 +                            | (((long)ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4))
-+                            | (blockState.isConditionallyFullOpaque() ? FLAG_HAS_SIDED_TRANSPARENT_BLOCKS : 0);
++                            | (blockState.isConditionallyFullOpaque() ? FLAG_HAS_SIDED_TRANSPARENT_BLOCKS : 0)
++            );
 +        }
 +        // this also accounts for a change in emitted light that would cause a decrease
 +        // this also accounts for the change of direction of propagation (i.e old block was full transparent, new block is full opaque or vice versa)
 +        // as it checks all neighbours (even if current level is 0)
-+        this.decreaseQueue[this.decreaseQueueInitialLength++] =
++        this.appendToDecreaseQueue(
 +                ((worldX + (worldZ << 6) + (worldY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                        | (currentLevel & 0xFL) << (6 + 6 + 16)
-+                        | (((long)ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4));
-+        // always keep sided transparent false here, new block might be conditionally transparent which would
-+        // prevent us from decreasing sources in the directions where the new block is opaque
-+        // if it turns out we were wrong to de-propagate the source, the re-propagate logic WILL always
-+        // catch that and fix it.
++                        | (((long)ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4))
++                        // always keep sided transparent false here, new block might be conditionally transparent which would
++                        // prevent us from decreasing sources in the directions where the new block is opaque
++                        // if it turns out we were wrong to de-propagate the source, the re-propagate logic WILL always
++                        // catch that and fix it.
++        );
 +        // re-propagating neighbours (done by the decrease queue) will also account for opacity changes in this block
 +    }
 +
@@ -281,11 +274,12 @@ index 0000000000000000000000000000000000000000..80773f755b16c755bdf9f8f804011c8e
 +                continue;
 +            }
 +
-+            this.increaseQueue[this.increaseQueueInitialLength++] =
++            this.appendToIncreaseQueue(
 +                    ((pos.getX() + (pos.getZ() << 6) + (pos.getY() << (6 + 6)) + this.coordinateOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                            | (emittedLight & 0xFL) << (6 + 6 + 16)
 +                            | (((long)ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4))
-+                            | (blockState.isConditionallyFullOpaque() ? FLAG_HAS_SIDED_TRANSPARENT_BLOCKS : 0);
++                            | (blockState.isConditionallyFullOpaque() ? FLAG_HAS_SIDED_TRANSPARENT_BLOCKS : 0)
++            );
 +
 +
 +            // propagation wont set this for us
@@ -297,9 +291,9 @@ index 0000000000000000000000000000000000000000..80773f755b16c755bdf9f8f804011c8e
 +            this.performLightIncrease(lightAccess);
 +
 +            // verify neighbour edges
-+            this.checkChunkEdges(lightAccess, chunk, -1, 16);
++            this.checkChunkEdges(lightAccess, chunk, this.minLightSection, this.maxLightSection);
 +        } else {
-+            this.propagateNeighbourLevels(lightAccess, chunk, -1, 16);
++            this.propagateNeighbourLevels(lightAccess, chunk, this.minLightSection, this.maxLightSection);
 +
 +            this.performLightIncrease(lightAccess);
 +        }
@@ -630,12 +624,13 @@ index 0000000000000000000000000000000000000000..9910dc9f1a087f5baf404a5b8ebb5a9f
 +}
 diff --git a/src/main/java/com/tuinity/tuinity/chunk/light/SkyStarLightEngine.java b/src/main/java/com/tuinity/tuinity/chunk/light/SkyStarLightEngine.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965af4665aee
+index 0000000000000000000000000000000000000000..8df35be7224c3e499c2fd46931e3ad325ec2f1b5
 --- /dev/null
 +++ b/src/main/java/com/tuinity/tuinity/chunk/light/SkyStarLightEngine.java
-@@ -0,0 +1,785 @@
+@@ -0,0 +1,748 @@
 +package com.tuinity.tuinity.chunk.light;
 +
++import com.tuinity.tuinity.util.WorldUtil;
 +import it.unimi.dsi.fastutil.shorts.ShortCollection;
 +import net.minecraft.server.BlockPosition;
 +import net.minecraft.server.ChunkCoordIntPair;
@@ -647,6 +642,7 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +import net.minecraft.server.ILightAccess;
 +import net.minecraft.server.VoxelShape;
 +import net.minecraft.server.VoxelShapes;
++import net.minecraft.server.World;
 +import java.util.Arrays;
 +import java.util.Set;
 +
@@ -676,178 +672,143 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +      around those.
 +     */
 +
++    protected final int[] heightMapBlockChange = new int[16 * 16];
++    {
++        Arrays.fill(this.heightMapBlockChange, Integer.MIN_VALUE); // clear heightmap
++    }
++
++    protected final boolean[] nullPropagationCheckCache;
++
++    public SkyStarLightEngine(final World world) {
++        super(true, world);
++        this.nullPropagationCheckCache = new boolean[WorldUtil.getTotalLightSections(world)];
++    }
++
 +    @Override
-+    protected void handleEmptySectionChanges(final ILightAccess lightAccess, final IChunkAccess chunk,
-+                                             final Boolean[] emptinessChanges, final boolean unlit) {
++    protected boolean[] handleEmptySectionChanges(final ILightAccess lightAccess, final IChunkAccess chunk,
++                                                  final Boolean[] emptinessChanges, final boolean unlit) {
++        final World world = (World)lightAccess.getWorld();
 +        final int chunkX = chunk.getPos().x;
 +        final int chunkZ = chunk.getPos().z;
 +
-+        final boolean[][] chunkEmptinessMap = this.getEmptinessMap(chunkX, chunkZ);
-+
-+        // index = (cx + 2) + 5*(cz + 2)
-+        long loadedNeighboursBitset = 0L;
-+        long unloadedNeighbourBitset = 0L;
-+
-+        for (int dz = -1; dz <= 1; ++dz) {
-+            for (int dx = -1; dx <= 1; ++dx) {
-+                final IChunkAccess neighbour = this.getChunkInCache(dx + chunkX, dz + chunkZ);
-+                if (neighbour == null) {
-+                    continue;
-+                }
-+
-+                final boolean[][] neighbourEmptinessMap = this.getEmptinessMap(dx + chunkX, dz + chunkZ);
-+                for (int i = 0; i < neighbourEmptinessMap.length; ++i) {
-+                    // index = (cx + 1) + 3*(cz + 1)
-+                    final int dx2 = (i % 3) - 1;
-+                    final int dz2 = (i / 3) - 1;
-+
-+                    final int bitsetIndex = (dx2 + dx + 2) + 5*(dz2 + dz + 2);
-+                    if (neighbourEmptinessMap[i] == null) {
-+                        unloadedNeighbourBitset |= 1L << bitsetIndex;
-+                    } else {
-+                        loadedNeighboursBitset |= 1L << bitsetIndex;
-+                    }
-+                }
-+            }
-+        }
-+
-+        loadedNeighboursBitset &= ~unloadedNeighbourBitset;
-+        loadedNeighboursBitset |=  1L << ((0 + 2) + 5*(0 + 2));
-+
-+        final boolean[] needsDeInitCheck = new boolean[9];
-+        final boolean needsInit = unlit || chunkEmptinessMap[IChunkAccess.getEmptinessMapIndex(0, 0)] == null;
++        boolean[] chunkEmptinessMap = this.getEmptinessMap(chunkX, chunkZ);
++        boolean[] ret = null;
++        final boolean needsInit = unlit || chunkEmptinessMap == null;
 +        if (needsInit) {
-+            chunkEmptinessMap[IChunkAccess.getEmptinessMapIndex(0, 0)] = new boolean[16];
++            this.setEmptinessMapCache(chunkX, chunkZ, ret = chunkEmptinessMap = new boolean[WorldUtil.getTotalSections(world)]);
 +        }
 +
-+        // this chunk is new, so we need to init neighbours
-+        // because this chunk might have been modified inbetween loading/saving, we have to rewrite the emptiness map
-+        // for our neighbours, so don't bother checking if they exist & whether they even needed a de-init recalc
-+        for (int dz = -1; dz <= 1; ++dz) {
-+            for (int dx = -1; dx <= 1; ++dx) {
-+                final IChunkAccess neighbour = this.getChunkInCache(dx + chunkX, dz + chunkZ);
-+                if (neighbour == null) {
-+                    // if the neighbour hasn't initialised its own empty map, we can't use it
-+                    // when it does though, it'll come by and initialise our map for it
-+                    continue;
++        // update emptiness map
++        for (int sectionIndex = (emptinessChanges.length - 1); sectionIndex >= 0; --sectionIndex) {
++            final Boolean valueBoxed = emptinessChanges[sectionIndex];
++            if (valueBoxed == null) {
++                if (needsInit) {
++                    throw new IllegalStateException("Current chunk has not initialised emptiness map yet supplied emptiness map isn't filled?");
 +                }
-+                final boolean[][] neighbourEmptinessMap = this.getEmptinessMap(dx + chunkX, dz + chunkZ);
-+
-+                if (needsInit && (dx | dz) != 0) {
-+                    // init neighbour
-+                    neighbourEmptinessMap[IChunkAccess.getEmptinessMapIndex(-dx, -dz)] = new boolean[16];
-+
-+                    if (neighbourEmptinessMap[IChunkAccess.getEmptinessMapIndex(0, 0)] != null) {
-+                        // init ourselves
-+                        System.arraycopy(
-+                                neighbourEmptinessMap[IChunkAccess.getEmptinessMapIndex(0, 0)],
-+                                0,
-+                                chunkEmptinessMap[IChunkAccess.getEmptinessMapIndex(dx, dz)] = new boolean[16],
-+                                0,
-+                                16
-+                        );
-+                    }
-+                }
-+
-+                // check if our neighbours are ready for a recalc
-+
-+                long neighboursMask = 0L;
-+                for (int dz2 = -1; dz2 <= 1; ++dz2) {
-+                    for (int dx2 = -1; dx2 <= 1; ++dx2) {
-+                        neighboursMask |= 1L << ((dx2 + dx + 2) + 5*(dz2 + dz + 2));
-+                    }
-+                }
-+
-+                if ((loadedNeighboursBitset & neighboursMask) == neighboursMask) {
-+                    // can check for de-init
-+                    needsDeInitCheck[(dx + 1) + 3 * (dz + 1)] = true;
-+                }
++                continue;
 +            }
++            chunkEmptinessMap[sectionIndex] = valueBoxed.booleanValue();
 +        }
 +
-+        for (int sectionY = (emptinessChanges.length - 1); sectionY >= 0; --sectionY) {
-+            final Boolean valueBoxed = emptinessChanges[sectionY];
++        // now init neighbour nibbles
++        for (int sectionIndex = (emptinessChanges.length - 1); sectionIndex >= 0; --sectionIndex) {
++            final Boolean valueBoxed = emptinessChanges[sectionIndex];
++            final int sectionY = sectionIndex + this.minSection;
 +            if (valueBoxed == null) {
 +                continue;
 +            }
 +
 +            final boolean empty = valueBoxed.booleanValue();
 +
-+            for (int dz = -1; dz <= 1; ++dz) {
-+                for (int dx = -1; dx <= 1; ++dx) {
-+                    final IChunkAccess neighbour = this.getChunkInCache(dx + chunkX, dz + chunkZ);
-+                    if (neighbour == null) {
-+                        // this is the case on the client, we _assume_ the server inits and sends to us.
-+                        // or we're on the server, and the neighbours haven't generated light yet.
-+                        continue;
-+                    }
-+
-+                    // init nibbles as needed
-+
-+                    if (!empty) {
-+                        // if we're not empty, we also need to initialise nibbles
-+                        // note: if we're unlit, we absolutely do not want to extrude, as light data isn't set up
-+                        final boolean extrude = (dx | dz) != 0 || !unlit;
-+                        for (int dy = 1; dy >= -1; --dy) {
-+                            this.initNibbleForLitChunk(dx + chunkX, dy + sectionY, dz + chunkZ, extrude, false);
-+                        }
-+                    }
-+
-+                    // update neighbour map
-+                    this.getEmptinessMap(dx + chunkX, dz + chunkZ)[IChunkAccess.getEmptinessMapIndex(-dx, -dz)][sectionY] = empty;
-+                }
-+            }
-+        }
-+
-+        // check for de-init, only runs if this just had data loaded in (or is being lit)
-+        for (int i = 0; i < needsDeInitCheck.length; ++i) {
-+            if (!needsDeInitCheck[i]) {
++            if (empty) {
 +                continue;
 +            }
 +
-+            // index = (cx + 1) + 3*(cz + 1)
-+            final int neighbourX = (i % 3) - 1 + chunkX;
-+            final int neighbourZ = (i / 3) - 1 + chunkZ;
-+
-+            final boolean[][] neighbourEmptinessMap = this.getEmptinessMap(neighbourX, neighbourZ);
-+
-+            for (int sectionY = 16; sectionY >= -1; --sectionY) {
-+                final SWMRNibbleArray nibble = this.getNibbleFromCache(neighbourX, sectionY, neighbourZ);
-+                if (nibble == null || nibble.isNullNibbleUpdating()) {
-+                    // already null
-+                    continue;
++            for (int dz = -1; dz <= 1; ++dz) {
++                for (int dx = -1; dx <= 1; ++dx) {
++                    // if we're not empty, we also need to initialise nibbles
++                    // note: if we're unlit, we absolutely do not want to extrude, as light data isn't set up
++                    final boolean extrude = (dx | dz) != 0 || !unlit;
++                    for (int dy = 1; dy >= -1; --dy) {
++                        this.initNibbleForLitChunk(dx + chunkX, dy + sectionY, dz + chunkZ, extrude, false);
++                    }
 +                }
++            }
++        }
 +
-+                // check neighbours to see if we need to de-init this one
-+                boolean allEmpty = true;
-+                neighbour_search:
-+                for (int dy = -1; dy <= 1; ++dy) {
-+                    for (int dz = -1; dz <= 1; ++dz) {
-+                        for (int dx = -1; dx <= 1; ++dx) {
-+                            final int y = sectionY + dy;
-+                            if (y < 0 || y > 15) {
-+                                // empty
-+                                continue;
-+                            }
-+                            if (!neighbourEmptinessMap[IChunkAccess.getEmptinessMapIndex(dx, dz)][y]) {
-+                                allEmpty = false;
-+                                break neighbour_search;
-+                            }
++        // check for de-init and lazy-init
++        // lazy init is when chunks are being lit, so at the time they weren't loaded when their neighbours were running
++        // init checks.
++        for (int dz = -1; dz <= 1; ++dz) {
++            for (int dx = -1; dx <= 1; ++dx) {
++                // does this neighbour have 1 radius loaded?
++                boolean neighboursLoaded = true;
++                neighbour_loaded_search:
++                for (int dz2 = -1; dz2 <= 1; ++dz2) {
++                    for (int dx2 = -1; dx2 <= 1; ++dx2) {
++                        if (this.getEmptinessMap(dx + dx2 + chunkX, dz + dz2 + chunkZ) == null) {
++                            neighboursLoaded = false;
++                            break neighbour_loaded_search;
 +                        }
 +                    }
 +                }
 +
-+                if (allEmpty) {
-+                    // all were empty, so de-init
-+                    nibble.setNull();
++                for (int sectionY = this.maxLightSection; sectionY >= this.minLightSection; --sectionY) {
++                    final SWMRNibbleArray nibble = this.getNibbleFromCache(dx + chunkX, sectionY, dz + chunkZ);
++
++                    // check neighbours to see if we need to de-init this one
++                    boolean allEmpty = true;
++                    neighbour_search:
++                    for (int dy2 = -1; dy2 <= 1; ++dy2) {
++                        for (int dz2 = -1; dz2 <= 1; ++dz2) {
++                            for (int dx2 = -1; dx2 <= 1; ++dx2) {
++                                final int y = sectionY + dy2;
++                                if (y < this.minSection || y > this.maxSection) {
++                                    // empty
++                                    continue;
++                                }
++                                final boolean[] emptinessMap = this.getEmptinessMap(dx + dx2 + chunkX, dz + dz2 + chunkZ);
++                                if (emptinessMap != null) {
++                                    if (!emptinessMap[y - this.minSection]) {
++                                        allEmpty = false;
++                                        break neighbour_search;
++                                    }
++                                } else {
++                                    final ChunkSection section = this.getChunkSection(dx + dx2 + chunkX, y, dz + dz2 + chunkZ);
++                                    if (section != null && section != EMPTY_CHUNK_SECTION) {
++                                        allEmpty = false;
++                                        break neighbour_search;
++                                    }
++                                }
++                            }
++                        }
++                    }
++
++                    if (allEmpty & neighboursLoaded) {
++                        // can only de-init when neighbours are loaded
++                        // de-init is fine to delay, as de-init is just an optimisation - it's not required for lighting
++                        // to be correct
++
++                        // all were empty, so de-init
++                        if (nibble != null) {
++                            nibble.setNull();
++                        }
++                    } else if (!allEmpty) {
++                        // must init
++                        final boolean extrude = (dx | dz) != 0 || !unlit;
++                        this.initNibbleForLitChunk(dx + chunkX, sectionY, dz + chunkZ, extrude, false);
++                    }
 +                }
 +            }
 +        }
++
++        return ret;
 +    }
++
 +
 +    protected final void initNibbleForLitChunk(final int chunkX, final int chunkY, final int chunkZ, final boolean extrude,
 +                                               final boolean initRemovedNibbles) {
-+        if (chunkY < -1 || chunkY > 16 || this.getChunkInCache(chunkX, chunkZ) == null) {
++        if (chunkY < this.minLightSection || chunkY > this.maxLightSection || this.getChunkInCache(chunkX, chunkZ) == null) {
 +            return;
 +        }
 +        SWMRNibbleArray nibble = this.getNibbleFromCache(chunkX, chunkY, chunkZ);
@@ -867,11 +828,11 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +            return;
 +        }
 +
-+        final boolean[] emptinessMap = this.getEmptinessMap(chunkX, chunkZ)[IChunkAccess.getEmptinessMapIndex(0, 0)];
++        final boolean[] emptinessMap = this.getEmptinessMap(chunkX, chunkZ);
 +
 +        // are we above this chunk's lowest empty section?
-+        int lowestY = -2;
-+        for (int currY = 15; currY >= 0; --currY) {
++        int lowestY = this.minLightSection - 1;
++        for (int currY = this.maxSection; currY >= this.minSection; --currY) {
 +            if (emptinessMap == null) {
 +                // cannot delay nibble init for lit chunks, as we need to init to propagate into them.
 +                final ChunkSection current = this.getChunkSection(chunkX, currY, chunkZ);
@@ -879,7 +840,7 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +                    continue;
 +                }
 +            } else {
-+                if (emptinessMap[currY]) {
++                if (emptinessMap[currY - this.minSection]) {
 +                    continue;
 +                }
 +            }
@@ -898,7 +859,7 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +        if (extrude) {
 +            // this nibble is going to depend solely on the skylight data above it
 +            // find first non-null data above (there does exist one, as we just found it above)
-+            for (int currY = chunkY + 1; currY <= 16; ++currY) {
++            for (int currY = chunkY + 1; currY <= this.maxLightSection; ++currY) {
 +                final SWMRNibbleArray nibble = this.getNibbleFromCache(chunkX, currY, chunkZ);
 +                if (nibble != null && !nibble.isNullNibbleUpdating()) {
 +                    currNibble.extrudeLower(nibble);
@@ -921,8 +882,6 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +        }
 +    }
 +
-+    protected final boolean[] nullPropagationCheckCache = new boolean[16 - (-1) + 1];
-+
 +    // rets whether neighbours were init'd
 +
 +    protected final boolean checkNullSection(final int chunkX, final int chunkY, final int chunkZ,
@@ -933,10 +892,10 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +        // this nibble would be initialised). So, we don't have to initialise
 +        // the neighbours in the full 1 radius, because there's no worry that any "paths"
 +        // to the neighbours on this horizontal plane are blocked.
-+        if (chunkY < -1 || chunkY > 16 || this.nullPropagationCheckCache[chunkY + 1]) {
++        if (chunkY < this.minLightSection || chunkY > this.maxLightSection || this.nullPropagationCheckCache[chunkY - this.minLightSection]) {
 +            return false;
 +        }
-+        this.nullPropagationCheckCache[chunkY + 1] = true;
++        this.nullPropagationCheckCache[chunkY - this.minLightSection] = true;
 +
 +        // check horizontal neighbours
 +        boolean needInitNeighbours = false;
@@ -973,7 +932,7 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +        }
 +
 +        for (;;) {
-+            if (++chunkY > 16) {
++            if (++chunkY > this.maxLightSection) {
 +                return 15;
 +            }
 +
@@ -985,18 +944,19 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +        }
 +    }
 +
-+    public SkyStarLightEngine(final boolean isClientSide) {
-+        super(true, isClientSide);
++    @Override
++    protected boolean[] getEmptinessMap(final IChunkAccess chunk) {
++        return chunk.getEmptinessMap();
++    }
++
++    @Override
++    protected void setEmptinessMap(final IChunkAccess chunk, final boolean[] to) {
++        chunk.setEmptinessMap(to);
 +    }
 +
 +    @Override
 +    protected SWMRNibbleArray[] getNibblesOnChunk(final IChunkAccess chunk) {
 +        return chunk.getSkyNibbles();
-+    }
-+
-+    @Override
-+    protected boolean[][] getEmptinessMap(final IChunkAccess chunk) {
-+        return chunk.getEmptinessMap();
 +    }
 +
 +    @Override
@@ -1007,8 +967,7 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +    @Override
 +    protected boolean canUseChunk(final IChunkAccess chunk) {
 +        // can only use chunks for sky stuff if their sections have been init'd
-+        return chunk.getChunkStatus().isAtLeastStatus(ChunkStatus.LIGHT)
-+                && (this.isClientSide ? chunk.getEmptinessMap()[IChunkAccess.getEmptinessMapIndex(0, 0)] != null : chunk.isLit());
++        return chunk.getChunkStatus().isAtLeastStatus(ChunkStatus.LIGHT) && (this.isClientSide ? true : chunk.isLit());
 +    }
 +
 +    @Override
@@ -1037,24 +996,21 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +
 +        if (currentLevel == 15) {
 +            // must re-propagate clobbered source
-+            this.increaseQueue[this.increaseQueueInitialLength++] =
++            this.appendToIncreaseQueue(
 +                    ((worldX + (worldZ << 6) + (worldY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                            | (currentLevel & 0xFL) << (6 + 6 + 16)
 +                            | (((long)ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4))
-+                            | FLAG_HAS_SIDED_TRANSPARENT_BLOCKS; // don't know if the block is conditionally transparent
++                            | FLAG_HAS_SIDED_TRANSPARENT_BLOCKS // don't know if the block is conditionally transparent
++            );
 +        } else {
 +            this.setLightLevel(worldX, worldY, worldZ, 0);
 +        }
 +
-+        this.decreaseQueue[this.decreaseQueueInitialLength++] =
++        this.appendToDecreaseQueue(
 +                ((worldX + (worldZ << 6) + (worldY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                        | (currentLevel & 0xFL) << (6 + 6 + 16)
-+                        | (((long)ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4));
-+    }
-+
-+    protected final int[] heightMapBlockChange = new int[16 * 16];
-+    {
-+        Arrays.fill(this.heightMapBlockChange, -1024); // clear heightmap
++                        | (((long)ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4))
++        );
 +    }
 +
 +    @Override
@@ -1068,15 +1024,11 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +        final int heightMapOffset = chunkX * -16 + (chunkZ * (-16 * 16));
 +
 +        // setup heightmap for changes
-+        int highestBlockY = -1024;
 +        for (final BlockPosition pos : positions) {
 +            final int index = pos.getX() + (pos.getZ() << 4) + heightMapOffset;
 +            final int curr = this.heightMapBlockChange[index];
 +            if (pos.getY() > curr) {
 +                this.heightMapBlockChange[index] = pos.getY();
-+            }
-+            if (pos.getY() > highestBlockY) {
-+                highestBlockY = pos.getY();
 +            }
 +        }
 +
@@ -1087,11 +1039,11 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +        // now we can recalculate the sources for the changed columns
 +        for (int index = 0; index < (16 * 16); ++index) {
 +            final int maxY = this.heightMapBlockChange[index];
-+            if (maxY == -1024) {
++            if (maxY == Integer.MIN_VALUE) {
 +                // not changed
 +                continue;
 +            }
-+            this.heightMapBlockChange[index] = -1024; // restore default for next caller
++            this.heightMapBlockChange[index] = Integer.MIN_VALUE; // restore default for next caller
 +
 +            final int columnX = (index & 15) | (chunkX << 4);
 +            final int columnZ = (index >>> 4) | (chunkZ << 4);
@@ -1110,7 +1062,7 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +                // ensure section is checked
 +                this.checkNullSection(columnX >> 4, maxPropagationY >> 4, columnZ >> 4, true);
 +
-+                for (int currY = maxPropagationY; currY >= (-1 << 4); --currY) {
++                for (int currY = maxPropagationY; currY >= (this.minLightSection << 4); --currY) {
 +                    if ((currY & 15) == 15) {
 +                        // ensure section is checked
 +                        this.checkNullSection(columnX >> 4, (currY >> 4), columnZ >> 4, true);
@@ -1131,11 +1083,12 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +                    }
 +
 +                    // delay light set until after processing all sources to setup
-+                    this.decreaseQueue[this.decreaseQueueInitialLength++] =
++                    this.appendToDecreaseQueue(
 +                            ((columnX + (columnZ << 6) + (currY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                    | (15L << (6 + 6 + 16))
-+                                    | (propagateDirection << (6 + 6 + 16 + 4));
++                                    | (propagateDirection << (6 + 6 + 16 + 4))
 +                                    // do not set transparent blocks for the same reason we don't in the checkBlock method
++                    );
 +                }
 +            }
 +        }
@@ -1164,9 +1117,9 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +
 +        final ChunkSection[] sections = chunk.getSections();
 +
-+        int highestNonEmptySection = 15;
-+        while (highestNonEmptySection == -1 ||
-+                sections[highestNonEmptySection] == null || sections[highestNonEmptySection].isFullOfAir()) {
++        int highestNonEmptySection = this.maxSection;
++        while (highestNonEmptySection == (this.minSection - 1) ||
++                sections[highestNonEmptySection - this.minSection] == null || sections[highestNonEmptySection - this.minSection].isFullOfAir()) {
 +            this.checkNullSection(chunkX, highestNonEmptySection, chunkZ, false);
 +            // try propagate FULL to neighbours
 +
@@ -1219,21 +1172,22 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +
 +                for (int currY = highestNonEmptySection << 4, maxY = currY | 15; currY <= maxY; ++currY) {
 +                    for (int i = 0, currX = startX, currZ = startZ; i < 16; ++i, currX += incX, currZ += incZ) {
-+                        this.increaseQueue[this.increaseQueueInitialLength++] =
++                        this.appendToIncreaseQueue(
 +                                ((currX + (currZ << 6) + (currY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                        | (15L << (6 + 6 + 16)) // we know we're at full lit here
-+                                        | (propagateDirection << (6 + 6 + 16 + 4));
++                                        | (propagateDirection << (6 + 6 + 16 + 4))
 +                                        // no transparent flag, we know for a fact there are no blocks here that could be directionally transparent (as the section is EMPTY)
++                        );
 +                    }
 +                }
 +            }
 +
-+            if (highestNonEmptySection-- == -1) {
++            if (highestNonEmptySection-- == (this.minSection - 1)) {
 +                break;
 +            }
 +        }
 +
-+        if (highestNonEmptySection >= 0) {
++        if (highestNonEmptySection >= this.minSection) {
 +            // fill out our other sources
 +            final int minX = chunkPos.x << 4;
 +            final int maxX = chunkPos.x << 4 | 15;
@@ -1245,12 +1199,13 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +                    final int end = this.tryPropagateSkylight(world, currX, startY, currZ, false, false);
 +                    if (end == startY) {
 +                        // we need to propagate this one ourselves.
-+                        this.increaseQueue[this.increaseQueueInitialLength++] =
++                        this.appendToIncreaseQueue(
 +                                ((currX + (currZ << 6) + (startY << (6 + 6)) + this.coordinateOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                        | (15L << (6 + 6 + 16)) // we know we're at full lit here
-+                                        | (AxisDirection.POSITIVE_Y.everythingButThisDirection << (6 + 6 + 16 + 4)); // no need to check upwards, we know it's 15.
++                                        | (AxisDirection.POSITIVE_Y.everythingButThisDirection << (6 + 6 + 16 + 4)) // no need to check upwards, we know it's 15.
 +                                        // we know this block is air because the section is empty, so it's obviously not sidedly
 +                                        // transparent.
++                        );
 +                    }
 +                }
 +            }
@@ -1260,15 +1215,15 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +            // not required to propagate here, but this will reduce the hit of the edge checks
 +            this.performLightIncrease(lightAccess);
 +
-+            for (int y = 16; y >= -1; --y) {
++            for (int y = this.maxLightSection; y >= this.minLightSection; --y) {
 +                this.checkNullSection(chunkX, y, chunkZ, false);
 +            }
-+            this.checkChunkEdges(lightAccess, chunk, -1, 16);
++            this.checkChunkEdges(lightAccess, chunk, this.minLightSection, this.maxLightSection);
 +        } else {
-+            for (int y = highestNonEmptySection; y >= -1; --y) {
++            for (int y = highestNonEmptySection; y >= this.minLightSection; --y) {
 +                this.checkNullSection(chunkX, y, chunkZ, false);
 +            }
-+            this.propagateNeighbourLevels(lightAccess, chunk, -1, highestNonEmptySection);
++            this.propagateNeighbourLevels(lightAccess, chunk, this.minLightSection, highestNonEmptySection);
 +
 +            this.performLightIncrease(lightAccess);
 +        }
@@ -1332,7 +1287,7 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +            above = AIR_BLOCK_STATE;
 +        }
 +
-+        for (;startY >= (-1 << 4); --startY) {
++        for (;startY >= (this.minLightSection << 4); --startY) {
 +            if ((startY & 15) == 15) {
 +                // ensure this section is always checked
 +                this.checkNullSection(worldX >> 4, startY >> 4, worldZ >> 4, extrudeInitialised);
@@ -1364,10 +1319,11 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +                // most of the time it falls here.
 +                // add to propagate
 +                // light set delayed until we determine if this nibble section is null
-+                this.increaseQueue[this.increaseQueueInitialLength++] =
++                this.appendToIncreaseQueue(
 +                        ((worldX + (worldZ << 6) + (startY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                | (15L << (6 + 6 + 16)) // we know we're at full lit here
-+                                | (propagateDirection << (6 + 6 + 16 + 4));
++                                | (propagateDirection << (6 + 6 + 16 + 4))
++                );
 +            } else {
 +                mutablePos.setValues(worldX, startY, worldZ);
 +                long flags = 0L;
@@ -1388,11 +1344,12 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +                }
 +
 +                // light set delayed until we determine if this nibble section is null
-+                this.increaseQueue[this.increaseQueueInitialLength++] =
++                this.appendToIncreaseQueue(
 +                        ((worldX + (worldZ << 6) + (startY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                | (15L << (6 + 6 + 16)) // we know we're at full lit here
 +                                | (propagateDirection << (6 + 6 + 16 + 4))
-+                                | flags;
++                                | flags
++                );
 +            }
 +
 +            above = current;
@@ -1421,14 +1378,15 @@ index 0000000000000000000000000000000000000000..d84da5fefe3f4efd25aef01102c5965a
 +}
 diff --git a/src/main/java/com/tuinity/tuinity/chunk/light/StarLightEngine.java b/src/main/java/com/tuinity/tuinity/chunk/light/StarLightEngine.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f5f0ca00e
+index 0000000000000000000000000000000000000000..976b1ba5f7d85f7170fa1c714d4d281afeb41d80
 --- /dev/null
 +++ b/src/main/java/com/tuinity/tuinity/chunk/light/StarLightEngine.java
-@@ -0,0 +1,1376 @@
+@@ -0,0 +1,1426 @@
 +package com.tuinity.tuinity.chunk.light;
 +
 +import com.tuinity.tuinity.util.CoordinateUtils;
 +import com.tuinity.tuinity.util.IntegerUtil;
++import com.tuinity.tuinity.util.WorldUtil;
 +import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 +import it.unimi.dsi.fastutil.shorts.ShortCollection;
 +import it.unimi.dsi.fastutil.shorts.ShortIterator;
@@ -1445,12 +1403,14 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +import net.minecraft.server.SectionPosition;
 +import net.minecraft.server.VoxelShape;
 +import net.minecraft.server.VoxelShapes;
++import net.minecraft.server.World;
 +import net.minecraft.server.WorldServer;
 +import java.util.ArrayList;
 +import java.util.Arrays;
 +import java.util.List;
 +import java.util.Set;
 +import java.util.function.Consumer;
++import java.util.function.IntConsumer;
 +
 +public abstract class StarLightEngine {
 +
@@ -1509,27 +1469,27 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +    // exactly how the vanilla light engine should behave for minecraft.
 +
 +    // similar to the above, except the chunk section indices vary from [-1, 1], or [0, 2]
-+    // for the y chunk section it's from [-1, 16] or [0, 17]
++    // for the y chunk section it's from [minLightSection, maxLightSection] or [0, maxLightSection - minLightSection]
 +    // index = x + (z * 5) + (y * 25)
 +    // null index indicates the chunk section doesn't exist (empty or out of bounds)
-+    protected final ChunkSection[] sectionCache = new ChunkSection[5 * 5 * (16 + 2 + 2)]; // add two extra sections for buffer
++    protected final ChunkSection[] sectionCache;
 +
 +    // the exact same as above, except for storing fast access to SWMRNibbleArray
-+    // for the y chunk section it's from [-1, 16] or [0, 17]
++    // for the y chunk section it's from [minLightSection, maxLightSection] or [0, maxLightSection - minLightSection]
 +    // index = x + (z * 5) + (y * 25)
-+    protected final SWMRNibbleArray[] nibbleCache = new SWMRNibbleArray[5 * 5 * (16 + 2 + 2)]; // add two extra sections for buffer
++    protected final SWMRNibbleArray[] nibbleCache;
 +
 +    // the exact same as above, except for storing fast access to nibbles to call change callbacks for
-+    // for the y chunk section it's from [-1, 16] or [0, 17]
++    // for the y chunk section it's from [minLightSection, maxLightSection] or [0, maxLightSection - minLightSection]
 +    // index = x + (z * 5) + (y * 25)
-+    protected final boolean[] notifyUpdateCache = new boolean[5 * 5 * (16 + 2 + 2)];
++    protected final boolean[] notifyUpdateCache;
 +
 +    // always initialsed during start of lighting. no index is null.
 +    // index = x + (z * 5)
 +    protected final IChunkAccess[] chunkCache = new IChunkAccess[5 * 5];
 +
 +    // index = x + (z * 5)
-+    protected final boolean[][][] emptinessMapCache = new boolean[5 * 5][][];
++    protected final boolean[][] emptinessMapCache = new boolean[5 * 5][];
 +
 +    protected final BlockPosition.MutableBlockPosition mutablePos1 = new BlockPosition.MutableBlockPosition();
 +    protected final BlockPosition.MutableBlockPosition mutablePos2 = new BlockPosition.MutableBlockPosition();
@@ -1552,16 +1512,31 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +    protected final int emittedLightMask;
 +    protected static final boolean isClientSide = false;
 +
-+    protected StarLightEngine(final boolean skylightPropagator, final boolean isClientSide) {
++    protected final World world;
++    protected final int minLightSection;
++    protected final int maxLightSection;
++    protected final int minSection;
++    protected final int maxSection;
++
++    protected StarLightEngine(final boolean skylightPropagator, final World world) {
 +        this.skylightPropagator = skylightPropagator;
 +        this.emittedLightMask = skylightPropagator ? 0 : 0xF;
 +        //this.isClientSide = isClientSide;
++        this.world = world;
++        this.minLightSection = WorldUtil.getMinLightSection(world);
++        this.maxLightSection = WorldUtil.getMaxLightSection(world);
++        this.minSection = WorldUtil.getMinSection(world);
++        this.maxSection = WorldUtil.getMaxSection(world);
++
++        this.sectionCache = new ChunkSection[5 * 5 * ((this.maxLightSection - this.minLightSection + 1) + 2)]; // add two extra sections for buffer
++        this.nibbleCache = new SWMRNibbleArray[5 * 5 * ((this.maxLightSection - this.minLightSection + 1) + 2)]; // add two extra sections for buffer
++        this.notifyUpdateCache = new boolean[5 * 5 * ((this.maxLightSection - this.minLightSection + 1) + 2)]; // add two extra sections for buffer
 +    }
 +
 +    protected final void setupEncodeOffset(final int centerX, final int centerY, final int centerZ) {
 +        // 31 = center + encodeOffset
 +        this.encodeOffsetX = 31 - centerX;
-+        this.encodeOffsetY = 31; // we want 0 to be the smallest encoded value
++        this.encodeOffsetY = (-(this.minLightSection - 1) << 4); // we want 0 to be the smallest encoded value
 +        this.encodeOffsetZ = 31 - centerZ;
 +
 +        // coordinateIndex = x | (z << 6) | (y << 12)
@@ -1569,7 +1544,7 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +
 +        // 2 = (centerX >> 4) + chunkOffset
 +        this.chunkOffsetX = 2 - (centerX >> 4);
-+        this.chunkOffsetY = 2; // lowest should be 0, not -2
++        this.chunkOffsetY = -(this.minLightSection - 1); // lowest should be 0
 +        this.chunkOffsetZ = 2 - (centerZ >> 4);
 +
 +        // chunk index = x + (5 * z)
@@ -1579,24 +1554,25 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +        this.chunkSectionIndexOffset = this.chunkIndexOffset + ((5 * 5) * this.chunkOffsetY);
 +    }
 +
-+    protected final void setupCaches(final ILightAccess chunkProvider, final int centerX, final int centerY, final int centerZ, final boolean relaxed) {
++    protected final void setupCaches(final ILightAccess chunkProvider, final int centerX, final int centerY, final int centerZ,
++                                     final boolean relaxed, final boolean tryToLoadChunksFor2Radius) {
 +        final int centerChunkX = centerX >> 4;
 +        final int centerChunkY = centerY >> 4;
 +        final int centerChunkZ = centerZ >> 4;
 +
 +        this.setupEncodeOffset(centerChunkX * 16 + 7, centerChunkY * 16 + 7, centerChunkZ * 16 + 7);
 +
-+        final int minX = centerChunkX - 1;
-+        final int minZ = centerChunkZ - 1;
-+        final int maxX = centerChunkX + 1;
-+        final int maxZ = centerChunkZ + 1;
++        final int radius = tryToLoadChunksFor2Radius ? 2 : 1;
 +
-+        for (int cx = minX; cx <= maxX; ++cx) {
-+            for (int cz = minZ; cz <= maxZ; ++cz) {
++        for (int dz = -radius; dz <= radius; ++dz) {
++            for (int dx = -radius; dx <= radius; ++dx) {
++                final int cx = centerChunkX + dx;
++                final int cz = centerChunkZ + dz;
++                final boolean isTwoRadius = Math.max(IntegerUtil.branchlessAbs(dx), IntegerUtil.branchlessAbs(dz)) == 2;
 +                final IChunkAccess chunk = (IChunkAccess)chunkProvider.getFeaturesReadyChunk(cx, cz); // mappings are awful here, this is the "get chunk at if at least features"
 +
 +                if (chunk == null) {
-+                    if (relaxed) {
++                    if (relaxed | isTwoRadius) {
 +                        continue;
 +                    }
 +                    throw new IllegalArgumentException("Trying to propagate light update before 1 radius neighbours ready");
@@ -1607,9 +1583,11 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                }
 +
 +                this.setChunkInCache(cx, cz, chunk);
-+                this.setBlocksForChunkInCache(cx, cz, chunk.getSections());
-+                this.setNibblesForChunkInCache(cx, cz, this.getNibblesOnChunk(chunk));
 +                this.setEmptinessMapCache(cx, cz, this.getEmptinessMap(chunk));
++                if (!isTwoRadius) {
++                    this.setBlocksForChunkInCache(cx, cz, chunk.getSections());
++                    this.setNibblesForChunkInCache(cx, cz, this.getNibblesOnChunk(chunk));
++                }
 +            }
 +        }
 +    }
@@ -1631,9 +1609,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +    }
 +
 +    protected final void setBlocksForChunkInCache(final int chunkX, final int chunkZ, final ChunkSection[] sections) {
-+        for (int cy = -1; cy <= 16; ++cy) {
++        for (int cy = this.minLightSection; cy <= this.maxLightSection; ++cy) {
 +            this.setChunkSectionInCache(chunkX, cy, chunkZ,
-+                    sections == null ? null : (cy >= 0 && cy <= 15 ? (sections[cy] == null || sections[cy].isFullOfAir() ? EMPTY_CHUNK_SECTION : sections[cy]) : EMPTY_CHUNK_SECTION));
++                    sections == null ? null : (cy >= this.minSection && cy <= this.maxSection ? (sections[cy - this.minSection] == null || sections[cy - this.minSection].isFullOfAir() ? EMPTY_CHUNK_SECTION : sections[cy - this.minSection]) : EMPTY_CHUNK_SECTION));
 +        }
 +    }
 +
@@ -1642,10 +1620,10 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +    }
 +
 +    protected final SWMRNibbleArray[] getNibblesForChunkFromCache(final int chunkX, final int chunkZ) {
-+        final SWMRNibbleArray[] ret = getEmptyLightArray();
++        final SWMRNibbleArray[] ret = new SWMRNibbleArray[this.maxLightSection - this.minLightSection + 1];
 +
-+        for (int cy = -1; cy <= 16; ++cy) {
-+            ret[cy + 1] = this.nibbleCache[chunkX + 5*chunkZ + (cy * (5 * 5)) + this.chunkSectionIndexOffset];
++        for (int cy = this.minLightSection; cy <= this.maxLightSection; ++cy) {
++            ret[cy - this.minLightSection] = this.nibbleCache[chunkX + 5*chunkZ + (cy * (5 * 5)) + this.chunkSectionIndexOffset];
 +        }
 +
 +        return ret;
@@ -1656,8 +1634,8 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +    }
 +
 +    protected final void setNibblesForChunkInCache(final int chunkX, final int chunkZ, final SWMRNibbleArray[] nibbles) {
-+        for (int cy = -1; cy <= 16; ++cy) {
-+            this.setNibbleInCache(chunkX, cy, chunkZ, nibbles == null ? null : nibbles[cy + 1]);
++        for (int cy = this.minLightSection; cy <= this.maxLightSection; ++cy) {
++            this.setNibbleInCache(chunkX, cy, chunkZ, nibbles == null ? null : nibbles[cy - this.minLightSection]);
 +        }
 +    }
 +
@@ -1784,11 +1762,11 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +        }
 +    }
 +
-+    protected final boolean[][] getEmptinessMap(final int chunkX, final int chunkZ) {
++    protected final boolean[] getEmptinessMap(final int chunkX, final int chunkZ) {
 +        return this.emptinessMapCache[chunkX + 5*chunkZ + this.chunkIndexOffset];
 +    }
 +
-+    protected final void setEmptinessMapCache(final int chunkX, final int chunkZ, final boolean[][] emptinessMap) {
++    protected final void setEmptinessMapCache(final int chunkX, final int chunkZ, final boolean[] emptinessMap) {
 +        this.emptinessMapCache[chunkX + 5*chunkZ + this.chunkIndexOffset] = emptinessMap;
 +    }
 +
@@ -1798,8 +1776,20 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +        return ret == -1 ? dfl : ret;
 +    }
 +
++    /**
++     * @deprecated To be removed in 1.17 due to variable section count
++     */
++    @Deprecated
 +    public static SWMRNibbleArray[] getFilledEmptyLight() {
-+        final SWMRNibbleArray[] ret = getEmptyLightArray();
++        return getFilledEmptyLight(16 - (-1) + 1);
++    }
++
++    public static SWMRNibbleArray[] getFilledEmptyLight(final World world) {
++        return getFilledEmptyLight(WorldUtil.getTotalLightSections(world));
++    }
++
++    private static SWMRNibbleArray[] getFilledEmptyLight(final int totalLightSections) {
++        final SWMRNibbleArray[] ret = new SWMRNibbleArray[totalLightSections];
 +
 +        for (int i = 0, len = ret.length; i < len; ++i) {
 +            ret[i] = new SWMRNibbleArray(null, true);
@@ -1808,11 +1798,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +        return ret;
 +    }
 +
-+    public static SWMRNibbleArray[] getEmptyLightArray() {
-+        return new SWMRNibbleArray[16 - (-1) + 1];
-+    }
++    protected abstract boolean[] getEmptinessMap(final IChunkAccess chunk);
 +
-+    protected abstract boolean[][] getEmptinessMap(final IChunkAccess chunk);
++    protected abstract void setEmptinessMap(final IChunkAccess chunk, final boolean[] to);
 +
 +    protected abstract SWMRNibbleArray[] getNibblesOnChunk(final IChunkAccess chunk);
 +
@@ -1822,14 +1810,17 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +
 +    public final void blocksChangedInChunk(final ILightAccess lightAccess, final int chunkX, final int chunkZ,
 +                                           final Set<BlockPosition> positions, final Boolean[] changedSections) {
-+        this.setupCaches(lightAccess, chunkX * 16 + 7, 128, chunkZ * 16 + 7, this.isClientSide);
++        this.setupCaches(lightAccess, chunkX * 16 + 7, 128, chunkZ * 16 + 7, this.isClientSide, true);
 +        try {
 +            final IChunkAccess chunk = this.getChunkInCache(chunkX, chunkZ);
 +            if (this.isClientSide && chunk == null) {
 +                return;
 +            }
 +            if (changedSections != null) {
-+                this.handleEmptySectionChanges(lightAccess, chunk, changedSections, false);
++                final boolean[] ret = this.handleEmptySectionChanges(lightAccess, chunk, changedSections, false);
++                if (ret != null) {
++                    this.setEmptinessMap(chunk, ret);
++                }
 +            }
 +            if (!positions.isEmpty()) {
 +                this.propagateBlockChanges(lightAccess, chunk, positions);
@@ -2039,11 +2030,12 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                            continue;
 +                        }
 +
-+                        this.increaseQueue[this.increaseQueueInitialLength++] =
++                        this.appendToIncreaseQueue(
 +                                ((currX + (currZ << 6) + (currY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                        | ((level & 0xFL) << (6 + 6 + 16))
 +                                        | (propagateDirection << (6 + 6 + 16 + 4))
-+                                        | FLAG_HAS_SIDED_TRANSPARENT_BLOCKS; // don't know if the current block is transparent, must check.
++                                        | FLAG_HAS_SIDED_TRANSPARENT_BLOCKS // don't know if the current block is transparent, must check.
++                        );
 +                    }
 +                }
 +            }
@@ -2051,9 +2043,8 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +    }
 +
 +    public static Boolean[] getEmptySectionsForChunk(final IChunkAccess chunk) {
-+        final Boolean[] ret = new Boolean[16];
-+
 +        final ChunkSection[] sections = chunk.getSections();
++        final Boolean[] ret = new Boolean[sections.length];
 +
 +        for (int i = 0; i < sections.length; ++i) {
 +            if (sections[i] == null || sections[i].isFullOfAir()) {
@@ -2068,7 +2059,7 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +
 +    public final void handleEmptySectionChanges(final ILightAccess lightAccess, final int chunkX, final int chunkZ,
 +                                                final Boolean[] emptinessChanges) {
-+        this.setupCaches(lightAccess, chunkX * 16 + 7, 128, chunkZ * 16 + 7, this.isClientSide);
++        this.setupCaches(lightAccess, chunkX * 16 + 7, 128, chunkZ * 16 + 7, this.isClientSide, true);
 +        if (this.isClientSide) {
 +            // force current chunk into cache
 +            final IChunkAccess chunk =  (IChunkAccess)lightAccess.getFeaturesReadyChunk(chunkX, chunkZ);
@@ -2086,7 +2077,10 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +            if (chunk == null) {
 +                return;
 +            }
-+            this.handleEmptySectionChanges(lightAccess, chunk, emptinessChanges, false);
++            final boolean[] ret = this.handleEmptySectionChanges(lightAccess, chunk, emptinessChanges, false);
++            if (ret != null) {
++                this.setEmptinessMap(chunk, ret);
++            }
 +            this.updateVisible(lightAccess);
 +        } finally {
 +            this.destroyCaches();
@@ -2097,11 +2091,12 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +    // subclasses should not invoke updateVisible, as this will always be done by the super call
 +    // subclasses are guaranteed that this is always called before a changed block set
 +    // newChunk specifies whether the changes describe a "first load" of a chunk or changes to existing, already loaded chunks
-+    protected abstract void handleEmptySectionChanges(final ILightAccess lightAccess, final IChunkAccess chunk,
-+                                                      final Boolean[] emptinessChanges, final boolean unlit);
++    // rets non-null when the emptiness map changed and needs to be updated
++    protected abstract boolean[] handleEmptySectionChanges(final ILightAccess lightAccess, final IChunkAccess chunk,
++                                                           final Boolean[] emptinessChanges, final boolean unlit);
 +
 +    public final void checkChunkEdges(final ILightAccess lightAccess, final int chunkX, final int chunkZ) {
-+        this.setupCaches(lightAccess, chunkX * 16 + 7, 128, chunkZ * 16 + 7, true);
++        this.setupCaches(lightAccess, chunkX * 16 + 7, 128, chunkZ * 16 + 7, true, false);
 +        try {
 +            final IChunkAccess chunk = this.getChunkInCache(chunkX, chunkZ);
 +            if (chunk == null) {
@@ -2115,7 +2110,7 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +    }
 +
 +    public final void checkChunkEdges(final ILightAccess lightAccess, final int chunkX, final int chunkZ, final ShortCollection sections) {
-+        this.setupCaches(lightAccess, chunkX * 16 + 7, 128, chunkZ * 16 + 7, true);
++        this.setupCaches(lightAccess, chunkX * 16 + 7, 128, chunkZ * 16 + 7, true, false);
 +        try {
 +            final IChunkAccess chunk = this.getChunkInCache(chunkX, chunkZ);
 +            if (chunk == null) {
@@ -2137,7 +2132,7 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +    protected abstract void lightChunk(final ILightAccess lightAccess, final IChunkAccess chunk, final boolean needsEdgeChecks);
 +
 +    public final void light(final ILightAccess lightAccess, final int chunkX, final int chunkZ, final Boolean[] emptySections) {
-+        this.setupCaches(lightAccess, chunkX * 16 + 7, 128, chunkZ * 16 + 7, false);
++        this.setupCaches(lightAccess, chunkX * 16 + 7, 128, chunkZ * 16 + 7, false, true);
 +        // force current chunk into cache
 +        final IChunkAccess chunk =  (IChunkAccess)lightAccess.getFeaturesReadyChunk(chunkX, chunkZ);
 +        this.setChunkInCache(chunkX, chunkZ, chunk);
@@ -2146,7 +2141,10 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +        this.setEmptinessMapCache(chunkX, chunkZ, this.getEmptinessMap(chunk));
 +
 +        try {
-+            this.handleEmptySectionChanges(lightAccess, chunk, emptySections, true);
++            final boolean[] ret = this.handleEmptySectionChanges(lightAccess, chunk, emptySections, true);
++            if (ret != null) {
++                this.setEmptinessMap(chunk, ret);
++            }
 +            this.lightChunk(lightAccess, chunk, false);
 +            this.updateVisible(lightAccess);
 +        } finally {
@@ -2154,90 +2152,13 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +        }
 +    }
 +
-+    public final void relight(final ILightAccess lightAccess, final int chunkX, final int chunkZ) {
-+        final IChunkAccess chunk = (IChunkAccess)lightAccess.getFeaturesReadyChunk(chunkX, chunkZ);
-+        this.relightChunk(lightAccess, chunk);
-+    }
-+
-+    protected final void relightChunk(final ILightAccess lightAccess, final IChunkAccess chunk) {
-+        final ChunkCoordIntPair chunkPos = chunk.getPos();
-+
-+        // ensure the emptiness map will be correct for the chunk
-+        this.handleEmptySectionChanges(lightAccess, chunkPos.x, chunkPos.z, getEmptySectionsForChunk(chunk));
-+
-+        this.setupEncodeOffset(chunkPos.x * 16 + 7, 128, chunkPos.z * 16 + 7);
-+
-+        try {
-+            final SWMRNibbleArray[][] chunkNibbles = new SWMRNibbleArray[(2 * 1 + 1) * (2 * 1 + 1)][];
-+            for (int i = 0; i < chunkNibbles.length; ++i) {
-+                chunkNibbles[i] = getFilledEmptyLight();
-+            }
-+
-+            this.setChunkInCache(chunkPos.x, chunkPos.z, chunk);
-+            this.setBlocksForChunkInCache(chunkPos.x, chunkPos.z, chunk.getSections());
-+            this.setNibblesForChunkInCache(chunkPos.x, chunkPos.z, chunkNibbles[IChunkAccess.getEmptinessMapIndex(0, 0)]);
-+            this.setEmptinessMapCache(chunkPos.x, chunkPos.z, new boolean[9][]);
-+
-+            this.handleEmptySectionChanges(lightAccess, chunk, getEmptySectionsForChunk(chunk), true);
-+            this.lightChunk(lightAccess, chunk, false);
-+
-+            for (int dz = -1; dz <= 1; ++dz) {
-+                for (int dx = -1; dx <= 1; ++dx) {
-+                    if ((dx | dz) == 0) {
-+                        continue;
-+                    }
-+
-+                    final int cx = dx + chunkPos.x;
-+                    final int cz = dz + chunkPos.z;
-+                    final IChunkAccess neighbourChunk = (IChunkAccess)lightAccess.getFeaturesReadyChunk(cx, cz);
-+
-+                    if (neighbourChunk == null || !this.canUseChunk(neighbourChunk)) {
-+                        continue;
-+                    }
-+
-+                    for (int dz2 = -1; dz2 <= 1; ++dz2) {
-+                        for (int dx2 = -1; dx2 <= 1; ++dx2) {
-+                            final IChunkAccess neighbour = this.getChunkInCache(dx2 + chunkPos.x, dz2 + chunkPos.z);
-+                            if (neighbour == null) {
-+                                continue;
-+                            }
-+
-+                            // re-insert nibbles for chunk, they might have been removed due to the emptiness map
-+                            this.setNibblesForChunkInCache(dx2 + chunkPos.x, dz2 + chunkPos.z, chunkNibbles[IChunkAccess.getEmptinessMapIndex(dx2, dz2)]);
-+                        }
-+                    }
-+
-+                    this.setChunkInCache(cx, cz, neighbourChunk);
-+                    this.setBlocksForChunkInCache(cx, cz, neighbourChunk.getSections());
-+                    this.setNibblesForChunkInCache(cx, cz, chunkNibbles[IChunkAccess.getEmptinessMapIndex(dx, dz)]);
-+                    this.setEmptinessMapCache(cx, cz, new boolean[9][]);
-+
-+                    this.handleEmptySectionChanges(lightAccess, neighbourChunk, getEmptySectionsForChunk(neighbourChunk), true);
-+                    this.lightChunk(lightAccess, neighbourChunk, false);
-+                }
-+            }
-+
-+            for (final SWMRNibbleArray nibble : chunkNibbles[IChunkAccess.getEmptinessMapIndex(0, 0)]) {
-+                nibble.updateVisible();
-+            }
-+
-+            this.setNibbles(chunk, chunkNibbles[IChunkAccess.getEmptinessMapIndex(0, 0)]);
-+
-+            for (int y = -1; y <= 16; ++y) {
-+                lightAccess.markLightSectionDirty(this.skylightPropagator ? EnumSkyBlock.SKY : EnumSkyBlock.BLOCK, new SectionPosition(chunkPos.x, y, chunkPos.z));
-+            }
-+        } finally {
-+            this.destroyCaches();
-+        }
-+    }
-+
 +    public final void relightChunks(final ILightAccess lightAccess, final Set<ChunkCoordIntPair> chunks,
-+                                    final Consumer<ChunkCoordIntPair> chunkLightCallback) {
++                                    final Consumer<ChunkCoordIntPair> chunkLightCallback, final IntConsumer onComplete) {
 +        // it's recommended for maximum performance that the set is ordered according to a BFS from the center of
 +        // the region of chunks to relight
 +        // it's required that tickets are added for each chunk to keep them loaded
 +        final Long2ObjectOpenHashMap<SWMRNibbleArray[]> nibblesByChunk = new Long2ObjectOpenHashMap<>();
-+        final Long2ObjectOpenHashMap<boolean[][]> emptinessMapByChunk = new Long2ObjectOpenHashMap<>();
++        final Long2ObjectOpenHashMap<boolean[]> emptinessMapByChunk = new Long2ObjectOpenHashMap<>();
 +
 +        final int[] neighbourLightOrder = new int[] {
 +                // d = 0
@@ -2254,16 +2175,15 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                1, -1,
 +        };
 +
++        int lightCalls = 0;
++
 +        for (final ChunkCoordIntPair chunkPos : chunks) {
 +            final int chunkX = chunkPos.x;
 +            final int chunkZ = chunkPos.z;
-+            final IChunkAccess chunk = (IChunkAccess)lightAccess.getFeaturesReadyChunk(chunkX, chunkZ);
++            final IChunkAccess chunk = (IChunkAccess) lightAccess.getFeaturesReadyChunk(chunkX, chunkZ);
 +            if (chunk == null || !this.canUseChunk(chunk)) {
 +                throw new IllegalStateException();
 +            }
-+
-+            // force update emptiness map so we can guarantee it's correct after we're done
-+            this.handleEmptySectionChanges(lightAccess, chunkX, chunkZ, getEmptySectionsForChunk(chunk));
 +
 +            for (int i = 0, len = neighbourLightOrder.length; i < len; i += 2) {
 +                final int dx = neighbourLightOrder[i];
@@ -2271,7 +2191,7 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                final int neighbourX = dx + chunkX;
 +                final int neighbourZ = dz + chunkZ;
 +
-+                final IChunkAccess neighbour = (IChunkAccess)lightAccess.getFeaturesReadyChunk(neighbourX, neighbourZ);
++                final IChunkAccess neighbour = (IChunkAccess) lightAccess.getFeaturesReadyChunk(neighbourX, neighbourZ);
 +                if (neighbour == null || !this.canUseChunk(neighbour)) {
 +                    continue;
 +                }
@@ -2311,17 +2231,19 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                    final long key = CoordinateUtils.getChunkKey(neighbourX, neighbourZ);
 +
 +                    // now insert the neighbour chunk and light it
-+                    final SWMRNibbleArray[] nibbles = getFilledEmptyLight();
-+                    final boolean[][] emptinessMap = new boolean[(2 * 1 + 1) * (2 * 1 + 1)][];
++                    final SWMRNibbleArray[] nibbles = getFilledEmptyLight(this.world);
 +                    nibblesByChunk.put(key, nibbles);
-+                    emptinessMapByChunk.put(key, emptinessMap);
 +
 +                    this.setChunkInCache(neighbourX, neighbourZ, neighbour);
 +                    this.setBlocksForChunkInCache(neighbourX, neighbourZ, neighbour.getSections());
 +                    this.setNibblesForChunkInCache(neighbourX, neighbourZ, nibbles);
-+                    this.setEmptinessMapCache(neighbourX, neighbourZ, emptinessMap);
 +
-+                    this.handleEmptySectionChanges(lightAccess, neighbour, getEmptySectionsForChunk(neighbour), true);
++                    final boolean[] neighbourEmptiness = this.handleEmptySectionChanges(lightAccess, neighbour, getEmptySectionsForChunk(neighbour), true);
++                    emptinessMapByChunk.put(key, neighbourEmptiness);
++                    if (chunks.contains(new ChunkCoordIntPair(neighbourX, neighbourZ))) {
++                        this.setEmptinessMap(neighbour, neighbourEmptiness);
++                    }
++
 +                    this.lightChunk(lightAccess, neighbour, false);
 +                } finally {
 +                    this.destroyCaches();
@@ -2338,12 +2260,19 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +
 +            this.setNibbles(chunk, nibbles);
 +
-+            for (int y = -1; y <= 16; ++y) {
++            for (int y = this.minLightSection; y <= this.maxLightSection; ++y) {
 +                lightAccess.markLightSectionDirty(this.skylightPropagator ? EnumSkyBlock.SKY : EnumSkyBlock.BLOCK, new SectionPosition(chunkX, y, chunkX));
 +            }
 +
 +            // now do callback
-+            chunkLightCallback.accept(chunkPos);
++            if (chunkLightCallback != null) {
++                chunkLightCallback.accept(chunkPos);
++            }
++            ++lightCalls;
++        }
++
++        if (onComplete != null) {
++            onComplete.accept(lightCalls);
 +        }
 +    }
 +
@@ -2364,10 +2293,40 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +    // whether the propagation needs to consider if its block is conditionally transparent
 +    protected static final long FLAG_HAS_SIDED_TRANSPARENT_BLOCKS = Long.MIN_VALUE;
 +
-+    protected final long[] increaseQueue = new long[16 * 16 * (16 * (16 + 2)) * 9 + 1];
++    protected long[] increaseQueue = new long[16 * 16 * 16];
 +    protected int increaseQueueInitialLength;
-+    protected final long[] decreaseQueue = new long[16 * 16 * (16 * (16 + 2)) * 9 + 1];
++    protected long[] decreaseQueue = new long[16 * 16 * 16];
 +    protected int decreaseQueueInitialLength;
++
++    protected final long[] resizeIncreaseQueue() {
++        return this.increaseQueue = Arrays.copyOf(this.increaseQueue, this.increaseQueue.length * 2);
++    }
++
++    protected final long[] resizeDecreaseQueue() {
++        return this.decreaseQueue = Arrays.copyOf(this.decreaseQueue, this.decreaseQueue.length * 2);
++    }
++
++    protected final void appendToIncreaseQueue(final long value) {
++        final int idx = this.increaseQueueInitialLength++;
++        long[] queue = this.increaseQueue;
++        if (idx >= queue.length) {
++            queue = this.resizeIncreaseQueue();
++            queue[idx] = value;
++        } else {
++            queue[idx] = value;
++        }
++    }
++
++    protected final void appendToDecreaseQueue(final long value) {
++        final int idx = this.decreaseQueueInitialLength++;
++        long[] queue = this.decreaseQueue;
++        if (idx >= queue.length) {
++            queue = this.resizeDecreaseQueue();
++            queue[idx] = value;
++        } else {
++            queue[idx] = value;
++        }
++    }
 +
 +    protected static final AxisDirection[][] OLD_CHECK_DIRECTIONS = new AxisDirection[1 << 6][];
 +    protected static final int ALL_DIRECTIONS_BITSET = (1 << 6) - 1;
@@ -2383,7 +2342,7 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +
 +    protected final void performLightIncrease(final ILightAccess lightAccess) {
 +        final IBlockAccess world = lightAccess.getWorld();
-+        final long[] queue = this.increaseQueue;
++        long[] queue = this.increaseQueue;
 +        int queueReadIndex = 0;
 +        int queueLength = this.increaseQueueInitialLength;
 +        this.increaseQueueInitialLength = 0;
@@ -2438,6 +2397,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                            this.postLightUpdate(offX, offY, offZ);
 +
 +                            if (targetLevel > 1) {
++                                if (queueLength >= queue.length) {
++                                    queue = this.resizeIncreaseQueue();
++                                }
 +                                queue[queueLength++] =
 +                                        ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                                | ((targetLevel & 0xFL) << (6 + 6 + 16))
@@ -2468,6 +2430,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        this.postLightUpdate(offX, offY, offZ);
 +
 +                        if (targetLevel > 1) {
++                            if (queueLength >= queue.length) {
++                                queue = this.resizeIncreaseQueue();
++                            }
 +                            queue[queueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((targetLevel & 0xFL) << (6 + 6 + 16))
@@ -2515,6 +2480,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                            this.postLightUpdate(offX, offY, offZ);
 +
 +                            if (targetLevel > 1) {
++                                if (queueLength >= queue.length) {
++                                    queue = this.resizeIncreaseQueue();
++                                }
 +                                queue[queueLength++] =
 +                                        ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                                | ((targetLevel & 0xFL) << (6 + 6 + 16))
@@ -2545,6 +2513,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        this.postLightUpdate(offX, offY, offZ);
 +
 +                        if (targetLevel > 1) {
++                            if (queueLength >= queue.length) {
++                                queue = this.resizeIncreaseQueue();
++                            }
 +                            queue[queueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((targetLevel & 0xFL) << (6 + 6 + 16))
@@ -2560,8 +2531,8 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +
 +    protected final void performLightDecrease(final ILightAccess lightAccess) {
 +        final IBlockAccess world = lightAccess.getWorld();
-+        final long[] queue = this.decreaseQueue;
-+        final long[] increaseQueue = this.increaseQueue;
++        long[] queue = this.decreaseQueue;
++        long[] increaseQueue = this.increaseQueue;
 +        int queueReadIndex = 0;
 +        int queueLength = this.decreaseQueueInitialLength;
 +        this.decreaseQueueInitialLength = 0;
@@ -2610,6 +2581,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        final int targetLevel = Math.max(0, propagatedLightLevel - Math.max(1, opacityCached));
 +                        if (lightLevel > targetLevel) {
 +                            // it looks like another source propagated here, so re-propagate it
++                            if (increaseQueueLength >= increaseQueue.length) {
++                                increaseQueue = this.resizeIncreaseQueue();
++                            }
 +                            increaseQueue[increaseQueueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((lightLevel & 0xFL) << (6 + 6 + 16))
@@ -2620,6 +2594,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        final int emittedLight = (customLightHandler != null ? this.getCustomLightLevel(customLightHandler, offX, offY, offZ, blockState.getEmittedLight()) : blockState.getEmittedLight()) & emittedMask;
 +                        if (emittedLight != 0) {
 +                            // re-propagate source
++                            if (increaseQueueLength >= increaseQueue.length) {
++                                increaseQueue = this.resizeIncreaseQueue();
++                            }
 +                            increaseQueue[increaseQueueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((emittedLight & 0xFL) << (6 + 6 + 16))
@@ -2631,6 +2608,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        this.postLightUpdate(offX, offY, offZ);
 +
 +                        if (targetLevel > 0) { // we actually need to propagate 0 just in case we find a neighbour...
++                            if (queueLength >= queue.length) {
++                                queue = this.resizeDecreaseQueue();
++                            }
 +                            queue[queueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((targetLevel & 0xFL) << (6 + 6 + 16))
@@ -2654,6 +2634,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        final int targetLevel = Math.max(0, propagatedLightLevel - Math.max(1, opacity));
 +                        if (lightLevel > targetLevel) {
 +                            // it looks like another source propagated here, so re-propagate it
++                            if (increaseQueueLength >= increaseQueue.length) {
++                                increaseQueue = this.resizeIncreaseQueue();
++                            }
 +                            increaseQueue[increaseQueueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((lightLevel & 0xFL) << (6 + 6 + 16))
@@ -2664,6 +2647,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        final int emittedLight = (customLightHandler != null ? this.getCustomLightLevel(customLightHandler, offX, offY, offZ, blockState.getEmittedLight()) : blockState.getEmittedLight()) & emittedMask;
 +                        if (emittedLight != 0) {
 +                            // re-propagate source
++                            if (increaseQueueLength >= increaseQueue.length) {
++                                increaseQueue = this.resizeIncreaseQueue();
++                            }
 +                            increaseQueue[increaseQueueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((emittedLight & 0xFL) << (6 + 6 + 16))
@@ -2675,6 +2661,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        this.postLightUpdate(offX, offY, offZ);
 +
 +                        if (targetLevel > 0) {
++                            if (queueLength >= queue.length) {
++                                queue = this.resizeDecreaseQueue();
++                            }
 +                            queue[queueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((targetLevel & 0xFL) << (6 + 6 + 16))
@@ -2719,6 +2708,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        final int targetLevel = Math.max(0, propagatedLightLevel - Math.max(1, opacityCached));
 +                        if (lightLevel > targetLevel) {
 +                            // it looks like another source propagated here, so re-propagate it
++                            if (increaseQueueLength >= increaseQueue.length) {
++                                increaseQueue = this.resizeIncreaseQueue();
++                            }
 +                            increaseQueue[increaseQueueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((lightLevel & 0xFL) << (6 + 6 + 16))
@@ -2729,6 +2721,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        final int emittedLight = (customLightHandler != null ? this.getCustomLightLevel(customLightHandler, offX, offY, offZ, blockState.getEmittedLight()) : blockState.getEmittedLight()) & emittedMask;
 +                        if (emittedLight != 0) {
 +                            // re-propagate source
++                            if (increaseQueueLength >= increaseQueue.length) {
++                                increaseQueue = this.resizeIncreaseQueue();
++                            }
 +                            increaseQueue[increaseQueueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((emittedLight & 0xFL) << (6 + 6 + 16))
@@ -2740,6 +2735,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        this.postLightUpdate(offX, offY, offZ);
 +
 +                        if (targetLevel > 0) { // we actually need to propagate 0 just in case we find a neighbour...
++                            if (queueLength >= queue.length) {
++                                queue = this.resizeDecreaseQueue();
++                            }
 +                            queue[queueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((targetLevel & 0xFL) << (6 + 6 + 16))
@@ -2763,6 +2761,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        final int targetLevel = Math.max(0, propagatedLightLevel - Math.max(1, opacity));
 +                        if (lightLevel > targetLevel) {
 +                            // it looks like another source propagated here, so re-propagate it
++                            if (increaseQueueLength >= increaseQueue.length) {
++                                increaseQueue = this.resizeIncreaseQueue();
++                            }
 +                            increaseQueue[increaseQueueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((lightLevel & 0xFL) << (6 + 6 + 16))
@@ -2773,6 +2774,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        final int emittedLight = (customLightHandler != null ? this.getCustomLightLevel(customLightHandler, offX, offY, offZ, blockState.getEmittedLight()) : blockState.getEmittedLight()) & emittedMask;
 +                        if (emittedLight != 0) {
 +                            // re-propagate source
++                            if (increaseQueueLength >= increaseQueue.length) {
++                                increaseQueue = this.resizeIncreaseQueue();
++                            }
 +                            increaseQueue[increaseQueueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((emittedLight & 0xFL) << (6 + 6 + 16))
@@ -2784,6 +2788,9 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +                        this.postLightUpdate(offX, offY, offZ);
 +
 +                        if (targetLevel > 0) { // we actually need to propagate 0 just in case we find a neighbour...
++                            if (queueLength >= queue.length) {
++                                queue = this.resizeDecreaseQueue();
++                            }
 +                            queue[queueLength++] =
 +                                    ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
 +                                            | ((targetLevel & 0xFL) << (6 + 6 + 16))
@@ -2803,13 +2810,14 @@ index 0000000000000000000000000000000000000000..5fcb8535e5319d74520e741dea9b9d9f
 +}
 diff --git a/src/main/java/com/tuinity/tuinity/chunk/light/StarLightInterface.java b/src/main/java/com/tuinity/tuinity/chunk/light/StarLightInterface.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e274318db5cd98
+index 0000000000000000000000000000000000000000..eb3662a0084d4f1f62d339ac11d2aaced092e28e
 --- /dev/null
 +++ b/src/main/java/com/tuinity/tuinity/chunk/light/StarLightInterface.java
-@@ -0,0 +1,465 @@
+@@ -0,0 +1,473 @@
 +package com.tuinity.tuinity.chunk.light;
 +
 +import com.tuinity.tuinity.util.CoordinateUtils;
++import com.tuinity.tuinity.util.WorldUtil;
 +import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 +import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 +import it.unimi.dsi.fastutil.shorts.ShortCollection;
@@ -2827,6 +2835,7 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +import java.util.Iterator;
 +import java.util.Set;
 +import java.util.function.Consumer;
++import java.util.function.IntConsumer;
 +
 +public final class StarLightInterface {
 +
@@ -2846,11 +2855,27 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +    protected final LightEngineLayerEventListener blockReader;
 +    protected static final boolean isClientSide = false;
 +
++    protected final int minSection;
++    protected final int maxSection;
++    protected final int minLightSection;
++    protected final int maxLightSection;
++
 +    public StarLightInterface(final ILightAccess lightAccess, final boolean hasSkyLight, final boolean hasBlockLight) {
 +        this.lightAccess = lightAccess;
 +        this.world = lightAccess == null ? null : (WorldServer)lightAccess.getWorld();
 +        this.cachedSkyPropagators = hasSkyLight && lightAccess != null ? new ArrayDeque<>() : null;
 +        this.cachedBlockPropagators = hasBlockLight && lightAccess != null ? new ArrayDeque<>() : null;
++        if (this.world == null) {
++            this.minSection = 0;
++            this.maxSection = 15;
++            this.minLightSection = -1;
++            this.maxLightSection = 16;
++        } else {
++            this.minSection = WorldUtil.getMinSection(this.world);
++            this.maxSection = WorldUtil.getMaxSection(this.world);
++            this.minLightSection = WorldUtil.getMinLightSection(this.world);
++            this.maxLightSection = WorldUtil.getMaxLightSection(this.world);
++        }
 +        this.skyReader = !hasSkyLight ? LightEngineLayerEventListener.Void.INSTANCE : new LightEngineLayerEventListener() {
 +            @Override
 +            public NibbleArray a(final SectionPosition pos) {
@@ -2861,15 +2886,15 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +
 +                final int sectionY = pos.getY();
 +
-+                if (sectionY > 16 || sectionY < -1) {
++                if (sectionY > StarLightInterface.this.maxLightSection || sectionY < StarLightInterface.this.minLightSection) {
 +                    return null;
 +                }
 +
-+                if (chunk.getEmptinessMap()[IChunkAccess.getEmptinessMapIndex(0, 0)] == null) {
++                if (chunk.getEmptinessMap() == null) {
 +                    return null;
 +                }
 +
-+                return chunk.getSkyNibbles()[sectionY + 1].toVanillaNibble();
++                return chunk.getSkyNibbles()[sectionY - StarLightInterface.this.minLightSection].toVanillaNibble();
 +            }
 +
 +            @Override
@@ -2885,17 +2910,17 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +
 +                int sectionY = y >> 4;
 +
-+                if (sectionY > 16) {
++                if (sectionY > StarLightInterface.this.maxLightSection) {
 +                    return 15;
 +                }
 +
-+                if (sectionY < -1) {
-+                    y = -16;
-+                    sectionY = -1;
++                if (sectionY < StarLightInterface.this.minLightSection) {
++                    sectionY = StarLightInterface.this.minLightSection;
++                    y = sectionY << 4;
 +                }
 +
 +                final SWMRNibbleArray[] nibbles = chunk.getSkyNibbles();
-+                final SWMRNibbleArray immediate = nibbles[sectionY + 1];
++                final SWMRNibbleArray immediate = nibbles[sectionY - StarLightInterface.this.minLightSection];
 +
 +                if (StarLightInterface.this.isClientSide) {
 +                    if (!immediate.isNullNibbleUpdating()) {
@@ -2907,16 +2932,16 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +                    }
 +                }
 +
-+                final boolean[] emptinessMap = chunk.getEmptinessMap()[IChunkAccess.getEmptinessMapIndex(0, 0)];
++                final boolean[] emptinessMap = chunk.getEmptinessMap();
 +
 +                if (emptinessMap == null) {
 +                    return 15;
 +                }
 +
 +                // are we above this chunk's lowest empty section?
-+                int lowestY = -2;
-+                for (int currY = 15; currY >= 0; --currY) {
-+                    if (emptinessMap[currY]) {
++                int lowestY = StarLightInterface.this.minLightSection - 1;
++                for (int currY = StarLightInterface.this.maxSection; currY >= StarLightInterface.this.minSection; --currY) {
++                    if (emptinessMap[currY - StarLightInterface.this.minSection]) {
 +                        continue;
 +                    }
 +
@@ -2931,8 +2956,8 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +
 +                // this nibble is going to depend solely on the skylight data above it
 +                // find first non-null data above (there does exist one, as we just found it above)
-+                for (int currY = sectionY + 1; currY <= 16; ++currY) {
-+                    final SWMRNibbleArray nibble = nibbles[currY + 1];
++                for (int currY = sectionY + 1; currY <= StarLightInterface.this.maxLightSection; ++currY) {
++                    final SWMRNibbleArray nibble = nibbles[currY - StarLightInterface.this.minLightSection];
 +                    if (StarLightInterface.this.isClientSide) {
 +                        if (!nibble.isNullNibbleUpdating()) {
 +                            return nibble.getUpdating(x, 0, z);
@@ -2957,7 +2982,12 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +            @Override
 +            public NibbleArray a(final SectionPosition pos) {
 +                final IChunkAccess chunk = StarLightInterface.this.getAnyChunkNow(pos.getX(), pos.getZ());
-+                return chunk != null ? chunk.getBlockNibbles()[pos.getY() + 1].toVanillaNibble() : null;
++
++                if (pos.getY() < StarLightInterface.this.minLightSection || pos.getY() > StarLightInterface.this.maxLightSection) {
++                    return null;
++                }
++
++                return chunk != null ? chunk.getBlockNibbles()[pos.getY() - StarLightInterface.this.minLightSection].toVanillaNibble() : null;
 +            }
 +
 +            @Override
@@ -2966,7 +2996,7 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +                final int cy = blockPos.getY() >> 4;
 +                final int cz = blockPos.getZ() >> 4;
 +
-+                if (cy < -1 || cy > 16) {
++                if (cy < StarLightInterface.this.minLightSection || cy > StarLightInterface.this.maxLightSection) {
 +                    return 0;
 +                }
 +
@@ -2976,7 +3006,7 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +                    return 0;
 +                }
 +
-+                final SWMRNibbleArray nibble = chunk.getBlockNibbles()[cy + 1];
++                final SWMRNibbleArray nibble = chunk.getBlockNibbles()[cy - StarLightInterface.this.minLightSection];
 +                if (StarLightInterface.this.isClientSide) {
 +                    return nibble.getUpdating(blockPos.getX(), blockPos.getY(), blockPos.getZ());
 +                } else {
@@ -3035,7 +3065,7 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +        }
 +
 +        if (ret == null) {
-+            return new SkyStarLightEngine(this.isClientSide);
++            return new SkyStarLightEngine(this.world);
 +        }
 +        return ret;
 +    }
@@ -3059,7 +3089,7 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +        }
 +
 +        if (ret == null) {
-+            return new BlockStarLightEngine(this.isClientSide);
++            return new BlockStarLightEngine(this.world);
 +        }
 +        return ret;
 +    }
@@ -3074,7 +3104,7 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +    }
 +
 +    public void blockChange(BlockPosition pos) {
-+        if (pos.getY() < 0 || pos.getY() > 255 || this.world == null) { // empty world
++        if (this.world == null || pos.getY() < WorldUtil.getMinBlockY(this.world) || pos.getY() > WorldUtil.getMaxBlockY(this.world)) { // empty world
 +            return;
 +        }
 +
@@ -3096,9 +3126,9 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +                return new ChunkChanges();
 +            });
 +            if (changes.changedSectionSet == null) {
-+                changes.changedSectionSet = new Boolean[16];
++                changes.changedSectionSet = new Boolean[this.maxSection - this.minSection + 1];
 +            }
-+            changes.changedSectionSet[pos.getY()] = Boolean.valueOf(newEmptyValue);
++            changes.changedSectionSet[pos.getY() - this.minSection] = Boolean.valueOf(newEmptyValue);
 +        }
 +    }
 +
@@ -3136,33 +3166,18 @@ index 0000000000000000000000000000000000000000..5edc4daffa24074a83d67a3ed6e27431
 +        }
 +    }
 +
-+    public void relightChunk(final int chunkX, final int chunkZ) {
++    public void relightChunks(final Set<ChunkCoordIntPair> chunks, final Consumer<ChunkCoordIntPair> chunkLightCallback,
++                              final IntConsumer onComplete) {
 +        final SkyStarLightEngine skyEngine = this.getSkyLightEngine();
 +        final BlockStarLightEngine blockEngine = this.getBlockLightEngine();
 +
 +        try {
 +            if (skyEngine != null) {
-+                skyEngine.relight(this.lightAccess, chunkX, chunkZ);
++                skyEngine.relightChunks(this.lightAccess, chunks, blockEngine == null ? chunkLightCallback : null,
++                        blockEngine == null ? onComplete : null);
 +            }
 +            if (blockEngine != null) {
-+                blockEngine.relight(this.lightAccess, chunkX, chunkZ);
-+            }
-+        } finally {
-+            this.releaseSkyLightEngine(skyEngine);
-+            this.releaseBlockLightEngine(blockEngine);
-+        }
-+    }
-+
-+    public void relightChunks(final Set<ChunkCoordIntPair> chunks, final Consumer<ChunkCoordIntPair> chunkLightCallback) {
-+        final SkyStarLightEngine skyEngine = this.getSkyLightEngine();
-+        final BlockStarLightEngine blockEngine = this.getBlockLightEngine();
-+
-+        try {
-+            if (skyEngine != null) {
-+                skyEngine.relightChunks(this.lightAccess, chunks, chunkLightCallback);
-+            }
-+            if (blockEngine != null) {
-+                blockEngine.relightChunks(this.lightAccess, chunks, chunkLightCallback);
++                blockEngine.relightChunks(this.lightAccess, chunks, chunkLightCallback, onComplete);
 +            }
 +        } finally {
 +            this.releaseSkyLightEngine(skyEngine);
@@ -3445,10 +3460,10 @@ index 048139d13424a874364dece8053e248dbcfd4aff..42ce3b80217b574a1852e12f500b366a
          public final String worldName;
 diff --git a/src/main/java/com/tuinity/tuinity/util/CoordinateUtils.java b/src/main/java/com/tuinity/tuinity/util/CoordinateUtils.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..224c79e015fc7a87ef8fc357d56f9253576f4c67
+index 0000000000000000000000000000000000000000..81fe01c122529f1716a264263957500015476f5f
 --- /dev/null
 +++ b/src/main/java/com/tuinity/tuinity/util/CoordinateUtils.java
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,128 @@
 +package com.tuinity.tuinity.util;
 +
 +import net.minecraft.server.BlockPosition;
@@ -3458,6 +3473,12 @@ index 0000000000000000000000000000000000000000..224c79e015fc7a87ef8fc357d56f9253
 +import net.minecraft.server.SectionPosition;
 +
 +public final class CoordinateUtils {
++
++    // dx, dz are relative to the target chunk
++    // dx, dz in [-radius, radius]
++    public static int getNeighbourMappedIndex(final int dx, final int dz, final int radius) {
++        return (dx + radius) + (2 * radius + 1)*(dz + radius);
++    }
 +
 +    // the chunk keys are compatible with vanilla
 +
@@ -3803,6 +3824,60 @@ index 0000000000000000000000000000000000000000..695444a510e616180734f5fd284f1a00
 +        throw new RuntimeException();
 +    }
 +}
+diff --git a/src/main/java/com/tuinity/tuinity/util/WorldUtil.java b/src/main/java/com/tuinity/tuinity/util/WorldUtil.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..141748fe4915eb46671f1d532951f14d7080818d
+--- /dev/null
++++ b/src/main/java/com/tuinity/tuinity/util/WorldUtil.java
+@@ -0,0 +1,48 @@
++package com.tuinity.tuinity.util;
++
++import net.minecraft.server.World;
++
++public final class WorldUtil {
++
++    // min, max are inclusive
++    // TODO update these for 1.17
++
++    public static int getMaxSection(final World world) {
++        return 15;
++    }
++
++    public static int getMinSection(final World world) {
++        return 0;
++    }
++
++    public static int getMaxLightSection(final World world) {
++        return getMaxSection(world) + 1;
++    }
++
++    public static int getMinLightSection(final World world) {
++        return getMinSection(world) - 1;
++    }
++
++
++
++    public static int getTotalSections(final World world) {
++        return getMaxSection(world) - getMinSection(world) + 1;
++    }
++
++    public static int getTotalLightSections(final World world) {
++        return getMaxLightSection(world) - getMinLightSection(world) + 1;
++    }
++
++    public static int getMinBlockY(final World world) {
++        return getMinSection(world) << 4;
++    }
++
++    public static int getMaxBlockY(final World world) {
++        return (getMaxSection(world) << 4) | 15;
++    }
++
++    private WorldUtil() {
++        throw new RuntimeException();
++    }
++
++}
 diff --git a/src/main/java/net/minecraft/server/BlockBase.java b/src/main/java/net/minecraft/server/BlockBase.java
 index 2760b377d1f68ac5f66e7274317379e2dda8288a..829d4a7508e1656dbdc912096b7eafcf30cbb5b2 100644
 --- a/src/main/java/net/minecraft/server/BlockBase.java
@@ -3882,17 +3957,17 @@ index 2760b377d1f68ac5f66e7274317379e2dda8288a..829d4a7508e1656dbdc912096b7eafcf
              protected final boolean c;
              private final boolean[] j;
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 2b3a1ad11707ec495a37d7e6e84dcaf96b49b310..0d3fd9b9bebdecabb78f6e04aed18b6ede654456 100644
+index 2b3a1ad11707ec495a37d7e6e84dcaf96b49b310..6ca9e373c402bf252bae6f08b88407bda48d7f0e 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
-@@ -140,6 +140,37 @@ public class Chunk implements IChunkAccess {
+@@ -140,6 +140,41 @@ public class Chunk implements IChunkAccess {
          }
      }
      // Tuinity end - optimise hard collision handling
 +    // Tuinity start - rewrite light engine
 +    private volatile com.tuinity.tuinity.chunk.light.SWMRNibbleArray[] blockNibbles = com.tuinity.tuinity.chunk.light.StarLightEngine.getFilledEmptyLight();
 +    private volatile com.tuinity.tuinity.chunk.light.SWMRNibbleArray[] skyNibbles = com.tuinity.tuinity.chunk.light.StarLightEngine.getFilledEmptyLight();
-+    private volatile boolean[][] emptinessMap = new boolean[9][];
++    private volatile boolean[] emptinessMap;
 +
 +    @Override
 +    public com.tuinity.tuinity.chunk.light.SWMRNibbleArray[] getBlockNibbles() {
@@ -3915,15 +3990,19 @@ index 2b3a1ad11707ec495a37d7e6e84dcaf96b49b310..0d3fd9b9bebdecabb78f6e04aed18b6e
 +    }
 +
 +    @Override
-+    public boolean[][] getEmptinessMap() {
++    public boolean[] getEmptinessMap() {
 +        return this.emptinessMap;
 +    }
 +
++    @Override
++    public void setEmptinessMap(boolean[] emptinessMap) {
++        this.emptinessMap = emptinessMap;
++    }
 +    // Tuinity end - rewrite light engine
  
      // Tuinity start - entity slices by class
      private final com.tuinity.tuinity.chunk.ChunkEntitiesByClass entitiesByClass = new com.tuinity.tuinity.chunk.ChunkEntitiesByClass(this);
-@@ -442,6 +473,11 @@ public class Chunk implements IChunkAccess {
+@@ -442,6 +477,11 @@ public class Chunk implements IChunkAccess {
  
      public Chunk(World world, ProtoChunk protochunk) {
          this(world, protochunk.getPos(), protochunk.getBiomeIndex(), protochunk.p(), protochunk.n(), protochunk.o(), protochunk.getInhabitedTime(), protochunk.getSections(), (Consumer) null);
@@ -3936,7 +4015,7 @@ index 2b3a1ad11707ec495a37d7e6e84dcaf96b49b310..0d3fd9b9bebdecabb78f6e04aed18b6e
  
          while (iterator.hasNext()) {
 diff --git a/src/main/java/net/minecraft/server/ChunkRegionLoader.java b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-index 5eb14c4cd8259310cdc62d05c5d223092deb8bbe..1f1f1a0cb84a07087025fd831441d0571d6de7c6 100644
+index 5eb14c4cd8259310cdc62d05c5d223092deb8bbe..13553da7c37d2701854c8d824311dd7bc1a0a423 100644
 --- a/src/main/java/net/minecraft/server/ChunkRegionLoader.java
 +++ b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
 @@ -64,6 +64,13 @@ public class ChunkRegionLoader {
@@ -3944,7 +4023,7 @@ index 5eb14c4cd8259310cdc62d05c5d223092deb8bbe..1f1f1a0cb84a07087025fd831441d057
      // Paper end
  
 +    // Tuinity start - rewrite light engine
-+    private static final int STARLIGHT_LIGHT_VERSION = 1;
++    private static final int STARLIGHT_LIGHT_VERSION = 2;
 +
 +    private static final String UNINITIALISED_SKYLIGHT_TAG = "starlight.skylight_uninit";
 +    private static final String STARLIGHT_VERSION_TAG = "starlight.light_version";
@@ -3953,7 +4032,7 @@ index 5eb14c4cd8259310cdc62d05c5d223092deb8bbe..1f1f1a0cb84a07087025fd831441d057
      public static InProgressChunkHolder loadChunk(WorldServer worldserver, DefinedStructureManager definedstructuremanager, VillagePlace villageplace, ChunkCoordIntPair chunkcoordintpair, NBTTagCompound nbttagcompound, boolean distinguish) {
          ArrayDeque<Runnable> tasksToExecuteOnMain = new ArrayDeque<>();
          // Paper end
-@@ -93,13 +100,15 @@ public class ChunkRegionLoader {
+@@ -93,13 +100,17 @@ public class ChunkRegionLoader {
          ProtoChunkTickList<FluidType> protochunkticklist1 = new ProtoChunkTickList<>((fluidtype) -> {
              return fluidtype == null || fluidtype == FluidTypes.EMPTY;
          }, chunkcoordintpair, nbttagcompound1.getList("LiquidsToBeTicked", 9));
@@ -3965,24 +4044,26 @@ index 5eb14c4cd8259310cdc62d05c5d223092deb8bbe..1f1f1a0cb84a07087025fd831441d057
          boolean flag2 = worldserver.getDimensionManager().hasSkyLight();
          ChunkProviderServer chunkproviderserver = worldserver.getChunkProvider();
          LightEngine lightengine = chunkproviderserver.getLightEngine();
-+        com.tuinity.tuinity.chunk.light.SWMRNibbleArray[] blockNibbles = com.tuinity.tuinity.chunk.light.StarLightEngine.getFilledEmptyLight(); // Tuinity - replace light impl
-+        com.tuinity.tuinity.chunk.light.SWMRNibbleArray[] skyNibbles = com.tuinity.tuinity.chunk.light.StarLightEngine.getFilledEmptyLight(); // Tuinity - replace light impl
++        com.tuinity.tuinity.chunk.light.SWMRNibbleArray[] blockNibbles = com.tuinity.tuinity.chunk.light.StarLightEngine.getFilledEmptyLight(worldserver); // Tuinity - replace light impl
++        com.tuinity.tuinity.chunk.light.SWMRNibbleArray[] skyNibbles = com.tuinity.tuinity.chunk.light.StarLightEngine.getFilledEmptyLight(worldserver); // Tuinity - replace light impl
++        final int minSection = com.tuinity.tuinity.util.WorldUtil.getMinLightSection(worldserver);
++        final int maxSection = com.tuinity.tuinity.util.WorldUtil.getMaxLightSection(worldserver);
  
          if (flag) {
              tasksToExecuteOnMain.add(() -> { // Paper - delay this task since we're executing off-main
-@@ -127,6 +136,7 @@ public class ChunkRegionLoader {
+@@ -127,6 +138,7 @@ public class ChunkRegionLoader {
  
              if (flag) {
                  if (nbttagcompound2.hasKeyOfType("BlockLight", 7)) {
-+                    if (com.tuinity.tuinity.config.TuinityConfig.useNewLightEngine && canUseBlockLight) blockNibbles[b0 + 1] = new com.tuinity.tuinity.chunk.light.SWMRNibbleArray(nbttagcompound2.getByteArray("BlockLight").clone()); // Tuinity - replace light impl
++                    if (com.tuinity.tuinity.config.TuinityConfig.useNewLightEngine && canUseBlockLight) blockNibbles[b0 - minSection] = new com.tuinity.tuinity.chunk.light.SWMRNibbleArray(nbttagcompound2.getByteArray("BlockLight").clone()); // Tuinity - replace light impl
                      // Paper start - delay this task since we're executing off-main
                      NibbleArray blockLight = new NibbleArray(nbttagcompound2.getByteArray("BlockLight"));
                      tasksToExecuteOnMain.add(() -> {
-@@ -136,13 +146,14 @@ public class ChunkRegionLoader {
+@@ -136,13 +148,14 @@ public class ChunkRegionLoader {
                  }
  
                  if (flag2 && nbttagcompound2.hasKeyOfType("SkyLight", 7)) {
-+                    if (com.tuinity.tuinity.config.TuinityConfig.useNewLightEngine && canUseSkyLight) skyNibbles[b0 + 1] = new com.tuinity.tuinity.chunk.light.SWMRNibbleArray(nbttagcompound2.getByteArray("SkyLight").clone()); // Tuinity - replace light impl
++                    if (com.tuinity.tuinity.config.TuinityConfig.useNewLightEngine && canUseSkyLight) skyNibbles[b0 - minSection] = new com.tuinity.tuinity.chunk.light.SWMRNibbleArray(nbttagcompound2.getByteArray("SkyLight").clone()); // Tuinity - replace light impl
                      // Paper start - delay this task since we're executing off-main
                      NibbleArray skyLight = new NibbleArray(nbttagcompound2.getByteArray("SkyLight"));
                      tasksToExecuteOnMain.add(() -> {
@@ -3990,11 +4071,11 @@ index 5eb14c4cd8259310cdc62d05c5d223092deb8bbe..1f1f1a0cb84a07087025fd831441d057
                      });
                      // Paper end - delay this task since we're executing off-main
 -                }
-+                } else if (flag2 && nbttagcompound2.getBoolean(UNINITIALISED_SKYLIGHT_TAG)) skyNibbles[b0 + 1] = new com.tuinity.tuinity.chunk.light.SWMRNibbleArray(); // Tuinity - replace light impl
++                } else if (flag2 && nbttagcompound2.getBoolean(UNINITIALISED_SKYLIGHT_TAG)) skyNibbles[b0 - minSection] = new com.tuinity.tuinity.chunk.light.SWMRNibbleArray(); // Tuinity - replace light impl
              }
          }
  
-@@ -181,8 +192,12 @@ public class ChunkRegionLoader {
+@@ -181,8 +194,12 @@ public class ChunkRegionLoader {
              object = new Chunk(worldserver.getMinecraftWorld(), chunkcoordintpair, biomestorage, chunkconverter, (TickList) object1, (TickList) object2, j, achunksection, // Paper start - fix massive nbt memory leak due to lambda. move lambda into a container method to not leak scope. Only clone needed NBT keys.
                  createLoadEntitiesConsumer(new SafeNBTCopy(nbttagcompound1, "TileEntities", "Entities", "ChunkBukkitValues")) // Paper - move CB Chunk PDC into here
              );// Paper end
@@ -4007,14 +4088,20 @@ index 5eb14c4cd8259310cdc62d05c5d223092deb8bbe..1f1f1a0cb84a07087025fd831441d057
  
              protochunk.a(biomestorage);
              object = protochunk;
-@@ -362,14 +377,14 @@ public class ChunkRegionLoader {
+@@ -361,15 +378,20 @@ public class ChunkRegionLoader {
+         NibbleArray[] blockLight = new NibbleArray[17 - (-1)];
          NibbleArray[] skyLight = new NibbleArray[17 - (-1)];
  
++        // Tuinity start - rewrite light impl
++        final int minSection = com.tuinity.tuinity.util.WorldUtil.getMinLightSection(world);
++        final int maxSection = com.tuinity.tuinity.util.WorldUtil.getMaxLightSection(world);
++        // Tuinity end - rewrite light impl
++
          for (int i = -1; i < 17; ++i) {
 -            NibbleArray blockArray = lightenginethreaded.a(EnumSkyBlock.BLOCK).a(SectionPosition.a(chunkPos, i));
 -            NibbleArray skyArray = lightenginethreaded.a(EnumSkyBlock.SKY).a(SectionPosition.a(chunkPos, i));
-+            NibbleArray blockArray = com.tuinity.tuinity.config.TuinityConfig.useNewLightEngine ? (!lightenginethreaded.hasBlockLight ? null : (chunk.getBlockNibbles()[i + 1].isAllZero() ? new NibbleArray() : chunk.getBlockNibbles()[i + 1].toVanillaNibble())) : lightenginethreaded.a(EnumSkyBlock.BLOCK).a(SectionPosition.a(chunkPos, i)); // Tuinity - chunk might not be loaded
-+            NibbleArray skyArray = com.tuinity.tuinity.config.TuinityConfig.useNewLightEngine ? (!lightenginethreaded.hasSkyLight ? null : (chunk.getSkyNibbles()[i + 1].isAllZero() ? new NibbleArray() : chunk.getSkyNibbles()[i + 1].toVanillaNibble())) : lightenginethreaded.a(EnumSkyBlock.SKY).a(SectionPosition.a(chunkPos, i)); // Tuinity - chunk might not be loaded
++            NibbleArray blockArray = com.tuinity.tuinity.config.TuinityConfig.useNewLightEngine ? (!lightenginethreaded.hasBlockLight ? null : (chunk.getBlockNibbles()[i - minSection].isAllZero() ? new NibbleArray() : chunk.getBlockNibbles()[i - minSection].toVanillaNibble())) : lightenginethreaded.a(EnumSkyBlock.BLOCK).a(SectionPosition.a(chunkPos, i)); // Tuinity - chunk might not be loaded
++            NibbleArray skyArray = com.tuinity.tuinity.config.TuinityConfig.useNewLightEngine ? (!lightenginethreaded.hasSkyLight ? null : (chunk.getSkyNibbles()[i - minSection].isAllZero() ? new NibbleArray() : chunk.getSkyNibbles()[i - minSection].toVanillaNibble())) : lightenginethreaded.a(EnumSkyBlock.SKY).a(SectionPosition.a(chunkPos, i)); // Tuinity - chunk might not be loaded
  
              // copy data for safety
 -            if (blockArray != null) {
@@ -4026,18 +4113,29 @@ index 5eb14c4cd8259310cdc62d05c5d223092deb8bbe..1f1f1a0cb84a07087025fd831441d057
                  skyArray = skyArray.copy();
              }
  
-@@ -437,8 +452,8 @@ public class ChunkRegionLoader {
+@@ -404,6 +426,10 @@ public class ChunkRegionLoader {
+     }
+     public static NBTTagCompound saveChunk(WorldServer worldserver, IChunkAccess ichunkaccess, AsyncSaveData asyncsavedata) {
+         // Paper end
++        // Tuinity start - rewrite light impl
++        final int minSection = com.tuinity.tuinity.util.WorldUtil.getMinLightSection(worldserver);
++        final int maxSection = com.tuinity.tuinity.util.WorldUtil.getMaxLightSection(worldserver);
++        // Tuinity end - rewrite light impl
+         ChunkCoordIntPair chunkcoordintpair = ichunkaccess.getPos();
+         NBTTagCompound nbttagcompound = new NBTTagCompound();
+         NBTTagCompound nbttagcompound1 = new NBTTagCompound();
+@@ -437,8 +463,8 @@ public class ChunkRegionLoader {
              NibbleArray nibblearray; // block light
              NibbleArray nibblearray1; // sky light
              if (asyncsavedata == null) {
 -                nibblearray = lightenginethreaded.a(EnumSkyBlock.BLOCK).a(SectionPosition.a(chunkcoordintpair, i)); /// Paper - diff on method change (see getAsyncSaveData)
 -                nibblearray1 = lightenginethreaded.a(EnumSkyBlock.SKY).a(SectionPosition.a(chunkcoordintpair, i)); // Paper - diff on method change (see getAsyncSaveData)
-+                nibblearray = com.tuinity.tuinity.config.TuinityConfig.useNewLightEngine ? (!lightenginethreaded.hasBlockLight ? null : (ichunkaccess.getBlockNibbles()[i + 1].isAllZero() ? new NibbleArray() : ichunkaccess.getBlockNibbles()[i + 1].toVanillaNibble())) : lightenginethreaded.a(EnumSkyBlock.BLOCK).a(SectionPosition.a(chunkcoordintpair, i)); // Tuinity - chunk might not be loaded
-+                nibblearray1 = com.tuinity.tuinity.config.TuinityConfig.useNewLightEngine ? (!lightenginethreaded.hasSkyLight ? null : (ichunkaccess.getSkyNibbles()[i + 1].isAllZero() ? new NibbleArray() : ichunkaccess.getSkyNibbles()[i + 1].toVanillaNibble())) : lightenginethreaded.a(EnumSkyBlock.SKY).a(SectionPosition.a(chunkcoordintpair, i)); // Tuinity - chunk might not be loaded
++                nibblearray = com.tuinity.tuinity.config.TuinityConfig.useNewLightEngine ? (!lightenginethreaded.hasBlockLight ? null : (ichunkaccess.getBlockNibbles()[i - minSection].isAllZero() ? new NibbleArray() : ichunkaccess.getBlockNibbles()[i - minSection].toVanillaNibble())) : lightenginethreaded.a(EnumSkyBlock.BLOCK).a(SectionPosition.a(chunkcoordintpair, i)); // Tuinity - chunk might not be loaded
++                nibblearray1 = com.tuinity.tuinity.config.TuinityConfig.useNewLightEngine ? (!lightenginethreaded.hasSkyLight ? null : (ichunkaccess.getSkyNibbles()[i - minSection].isAllZero() ? new NibbleArray() : ichunkaccess.getSkyNibbles()[i - minSection].toVanillaNibble())) : lightenginethreaded.a(EnumSkyBlock.SKY).a(SectionPosition.a(chunkcoordintpair, i)); // Tuinity - chunk might not be loaded
              } else {
                  nibblearray = asyncsavedata.blockLight[i + 1]; // +1 to offset the -1 starting index
                  nibblearray1 = asyncsavedata.skyLight[i + 1]; // +1 to offset the -1 starting index
-@@ -452,12 +467,12 @@ public class ChunkRegionLoader {
+@@ -452,12 +478,12 @@ public class ChunkRegionLoader {
                  }
  
                  if (nibblearray != null && !nibblearray.c()) {
@@ -4053,7 +4151,7 @@ index 5eb14c4cd8259310cdc62d05c5d223092deb8bbe..1f1f1a0cb84a07087025fd831441d057
  
                  nbttaglist.add(nbttagcompound2);
              }
-@@ -465,7 +480,7 @@ public class ChunkRegionLoader {
+@@ -465,7 +491,7 @@ public class ChunkRegionLoader {
  
          nbttagcompound1.set("Sections", nbttaglist);
          if (flag) {
@@ -4076,7 +4174,7 @@ index cebd808e273dbdb88feb16920dd7a2f60390b34f..33b8f4e0f09fdc41c8ea48b6ed77af19
      final com.destroystokyo.paper.util.maplist.IBlockDataList tickingList = new com.destroystokyo.paper.util.maplist.IBlockDataList(); // Paper
  
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 7240b885d96eb2df187b6229449af1a893a4524e..72fcd7f259630cb3c194deb685a2c4498a7c7079 100644
+index 7240b885d96eb2df187b6229449af1a893a4524e..40f56858143651bb0addd0b74db7388ecbe56521 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -527,6 +527,185 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -4258,8 +4356,8 @@ index 7240b885d96eb2df187b6229449af1a893a4524e..72fcd7f259630cb3c194deb685a2c449
 +
 +            this.networkManager.enableAutomaticFlush();
 +
-+            System.out.println("Block: " + this.getBukkitEntity().getLocation().getBlock().getLightFromBlocks());
-+            System.out.println("Sky: " + this.getBukkitEntity().getLocation().getBlock().getLightFromSky());
++            //System.out.println("Block: " + this.getBukkitEntity().getLocation().getBlock().getLightFromBlocks());
++            //System.out.println("Sky: " + this.getBukkitEntity().getLocation().getBlock().getLightFromSky());
 +            */  // TODO remove debug
 +
              if (this.getHealth() != this.lastHealthSent || this.lastFoodSent != this.foodData.getFoodLevel() || this.foodData.getSaturationLevel() == 0.0F != this.lastSentSaturationZero) {
@@ -4281,10 +4379,10 @@ index 36aafc3b71013bcec0f4d956761fc2710848b3fd..c9963c19892c3e408964b72983bc6e26
      }
  
 diff --git a/src/main/java/net/minecraft/server/IChunkAccess.java b/src/main/java/net/minecraft/server/IChunkAccess.java
-index 180b6b58dc5663158db84b6f1257591439b48c31..2e83dd9985204b41c1e6c829d76630df4434f32e 100644
+index 180b6b58dc5663158db84b6f1257591439b48c31..62a648a78481b4f3f35882c689e137e733f7f152 100644
 --- a/src/main/java/net/minecraft/server/IChunkAccess.java
 +++ b/src/main/java/net/minecraft/server/IChunkAccess.java
-@@ -24,6 +24,30 @@ public interface IChunkAccess extends IBlockAccess, IStructureAccess {
+@@ -24,6 +24,28 @@ public interface IChunkAccess extends IBlockAccess, IStructureAccess {
      }
      // Paper end
  
@@ -4302,12 +4400,10 @@ index 180b6b58dc5663158db84b6f1257591439b48c31..2e83dd9985204b41c1e6c829d76630df
 +    default void setSkyNibbles(com.tuinity.tuinity.chunk.light.SWMRNibbleArray[] nibbles) {
 +        throw new UnsupportedOperationException(this.getClass().getName());
 +    }
-+    // cx, cz are relative to the target chunk's map
-+    public static int getEmptinessMapIndex(final int cx, final int cz) {
-+        //return (cx + 1) + 3*(cz + 1);
-+        return (1 + 3 * 1) + (cx) + 3*(cz);
++    public default boolean[] getEmptinessMap() {
++        throw new UnsupportedOperationException(this.getClass().getName());
 +    }
-+    public default boolean[][] getEmptinessMap() {
++    public default void setEmptinessMap(final boolean[] emptinessMap) {
 +        throw new UnsupportedOperationException(this.getClass().getName());
 +    }
 +    // Tuinity end
@@ -4315,7 +4411,7 @@ index 180b6b58dc5663158db84b6f1257591439b48c31..2e83dd9985204b41c1e6c829d76630df
      IBlockData getType(final int x, final int y, final int z); // Paper
      @Nullable
      IBlockData setType(BlockPosition blockposition, IBlockData iblockdata, boolean flag);
-@@ -122,6 +146,7 @@ public interface IChunkAccess extends IBlockAccess, IStructureAccess {
+@@ -122,6 +144,7 @@ public interface IChunkAccess extends IBlockAccess, IStructureAccess {
      @Nullable
      NBTTagCompound j(BlockPosition blockposition);
  
@@ -4323,7 +4419,7 @@ index 180b6b58dc5663158db84b6f1257591439b48c31..2e83dd9985204b41c1e6c829d76630df
      Stream<BlockPosition> m();
  
      TickList<Block> n();
-@@ -142,6 +167,7 @@ public interface IChunkAccess extends IBlockAccess, IStructureAccess {
+@@ -142,6 +165,7 @@ public interface IChunkAccess extends IBlockAccess, IStructureAccess {
          return ashortlist[i];
      }
  
@@ -4349,7 +4445,7 @@ index be5384ee41290b24b0c419c3e8f4553db34b2399..df28f7a6bf4c650a22ddf046eae4d5e8
  
      IBlockAccess getWorld();
 diff --git a/src/main/java/net/minecraft/server/LightEngineThreaded.java b/src/main/java/net/minecraft/server/LightEngineThreaded.java
-index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e4340792312 100644
+index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..4d6663b3b4118f1b7f655c7b4a31d89a98e0d18f 100644
 --- a/src/main/java/net/minecraft/server/LightEngineThreaded.java
 +++ b/src/main/java/net/minecraft/server/LightEngineThreaded.java
 @@ -2,6 +2,11 @@ package net.minecraft.server;
@@ -4373,7 +4469,7 @@ index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e43
      // Paper start
      private static final int MAX_PRIORITIES = PlayerChunkMap.GOLDEN_TICKET + 2;
  
-@@ -156,13 +161,187 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
+@@ -156,13 +161,218 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
      private volatile int f = 5;
      private final AtomicBoolean g = new AtomicBoolean();
  
@@ -4401,18 +4497,49 @@ index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e43
 +        return world.getChunkProvider().getChunkAtImmediately(chunkX, chunkZ);
 +    }
 +
-+    public void relight(int chunkX, int chunkZ, Runnable whenComplete) {
-+        this.scheduleLightWorkTask(chunkX, chunkZ, LightEngineThreaded.Update.POST_UPDATE, () -> {
-+            this.theLightEngine.relightChunk(chunkX, chunkZ);
-+            whenComplete.run();
-+        });
-+    }
++    protected long relightCounter;
 +
-+    public void relight(java.util.Set<ChunkCoordIntPair> chunks,
-+                        java.util.function.Consumer<ChunkCoordIntPair> chunkLightCallback) {
++    public int relight(java.util.Set<ChunkCoordIntPair> chunks_param,
++                        java.util.function.Consumer<ChunkCoordIntPair> chunkLightCallback,
++                        java.util.function.IntConsumer onComplete) {
++        if (!org.bukkit.Bukkit.isPrimaryThread()) {
++            throw new IllegalStateException("Must only be called on the main thread");
++        }
++
++        java.util.Set<ChunkCoordIntPair> chunks = new java.util.LinkedHashSet<>(chunks_param);
++        // add tickets
++        java.util.Map<ChunkCoordIntPair, Long> ticketIds = new java.util.HashMap<>();
++        int totalChunks = 0;
++        for (java.util.Iterator<ChunkCoordIntPair> iterator = chunks.iterator(); iterator.hasNext();) {
++            final ChunkCoordIntPair chunkPos = iterator.next();
++
++            final IChunkAccess chunk = this.theLightEngine.getWorld().getChunkProvider().getChunkAtImmediately(chunkPos.x, chunkPos.z);
++            if (chunk == null || !chunk.isLit() || !chunk.getChunkStatus().isAtLeastStatus(ChunkStatus.LIGHT)) {
++                // cannot relight this chunk
++                iterator.remove();
++                continue;
++            }
++
++            final Long id = Long.valueOf(this.relightCounter++);
++
++            this.theLightEngine.getWorld().getChunkProvider().addTicketAtLevel(TicketType.CHUNK_RELIGHT, chunkPos, MCUtil.getTicketLevelFor(ChunkStatus.LIGHT), id);
++            ticketIds.put(chunkPos, id);
++
++            ++totalChunks;
++        }
++
 +        this.getExecutor().queue(() -> {
-+            this.theLightEngine.relightChunks(chunks, chunkLightCallback);
++            this.theLightEngine.relightChunks(chunks, (ChunkCoordIntPair chunkPos) -> {
++                chunkLightCallback.accept(chunkPos);
++                ((java.util.concurrent.Executor)this.theLightEngine.getWorld().getChunkProvider().serverThreadQueue).execute(() -> {
++                    this.theLightEngine.getWorld().getChunkProvider().playerChunkMap.getUpdatingChunk(chunkPos.pair()).sendPacketToTrackedPlayers(new PacketPlayOutLightUpdate(chunkPos, this, true), false);
++                    this.theLightEngine.getWorld().getChunkProvider().removeTicketAtLevel(TicketType.CHUNK_RELIGHT, chunkPos, MCUtil.getTicketLevelFor(ChunkStatus.LIGHT), ticketIds.get(chunkPos));
++                });
++            }, onComplete);
 +        });
++        this.queueUpdate();
++
++        return totalChunks;
 +    }
 +
 +    protected final Long2IntOpenHashMap holdingChunks = new Long2IntOpenHashMap();
@@ -4561,7 +4688,7 @@ index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e43
      public void close() {}
  
      @Override
-@@ -179,6 +358,15 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
+@@ -179,6 +389,15 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
      public void a(BlockPosition blockposition) {
          BlockPosition blockposition1 = blockposition.immutableCopy();
  
@@ -4577,7 +4704,7 @@ index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e43
          this.a(blockposition.getX() >> 4, blockposition.getZ() >> 4, LightEngineThreaded.Update.POST_UPDATE, SystemUtils.a(() -> {
              super.a(blockposition1);
          }, () -> {
-@@ -187,6 +375,11 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
+@@ -187,6 +406,11 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
      }
  
      protected void a(ChunkCoordIntPair chunkcoordintpair) {
@@ -4589,7 +4716,7 @@ index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e43
          this.a(chunkcoordintpair.x, chunkcoordintpair.z, () -> {
              return 0;
          }, LightEngineThreaded.Update.PRE_UPDATE, SystemUtils.a(() -> {
-@@ -211,6 +404,14 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
+@@ -211,6 +435,14 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
  
      @Override
      public void a(SectionPosition sectionposition, boolean flag) {
@@ -4604,7 +4731,7 @@ index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e43
          this.a(sectionposition.a(), sectionposition.c(), () -> {
              return 0;
          }, LightEngineThreaded.Update.PRE_UPDATE, SystemUtils.a(() -> {
-@@ -222,6 +423,11 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
+@@ -222,6 +454,11 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
  
      @Override
      public void a(ChunkCoordIntPair chunkcoordintpair, boolean flag) {
@@ -4616,7 +4743,7 @@ index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e43
          this.a(chunkcoordintpair.x, chunkcoordintpair.z, LightEngineThreaded.Update.PRE_UPDATE, SystemUtils.a(() -> {
              super.a(chunkcoordintpair, flag);
          }, () -> {
-@@ -231,6 +437,11 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
+@@ -231,6 +468,11 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
  
      @Override
      public void a(EnumSkyBlock enumskyblock, SectionPosition sectionposition, @Nullable NibbleArray nibblearray, boolean flag) {
@@ -4628,7 +4755,7 @@ index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e43
          this.a(sectionposition.a(), sectionposition.c(), () -> {
              return 0;
          }, LightEngineThreaded.Update.PRE_UPDATE, SystemUtils.a(() -> {
-@@ -240,6 +451,7 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
+@@ -240,6 +482,7 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
          }));
      }
  
@@ -4636,7 +4763,7 @@ index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e43
      private void a(int i, int j, LightEngineThreaded.Update lightenginethreaded_update, Runnable runnable) {
          this.a(i, j, this.d.c(ChunkCoordIntPair.pair(i, j)), lightenginethreaded_update, runnable);
      }
-@@ -252,6 +464,11 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
+@@ -252,6 +495,11 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
  
      @Override
      public void b(ChunkCoordIntPair chunkcoordintpair, boolean flag) {
@@ -4648,7 +4775,7 @@ index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e43
          this.a(chunkcoordintpair.x, chunkcoordintpair.z, () -> {
              return 0;
          }, LightEngineThreaded.Update.PRE_UPDATE, SystemUtils.a(() -> {
-@@ -277,6 +494,7 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
+@@ -277,6 +525,7 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
                  return;
              }
              // Paper end
@@ -4656,7 +4783,7 @@ index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e43
              ChunkSection[] achunksection = ichunkaccess.getSections();
  
              for (int i = 0; i < 16; ++i) {
-@@ -293,16 +511,25 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
+@@ -293,16 +542,25 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
                      super.a(blockposition, ichunkaccess.g(blockposition));
                  });
              }
@@ -4684,7 +4811,7 @@ index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e43
              // Paper start
              future.complete(ichunkaccess);
          });
-@@ -311,7 +538,7 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
+@@ -311,7 +569,7 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
      }
  
      public void queueUpdate() {
@@ -4693,7 +4820,7 @@ index 2f9c97dd4e1d705a87772d18c7ab4883a876af08..8f9154942bb7f9f195abb8a218928e43
              this.b.a((() -> { // Paper - decompile error
                  this.b();
                  this.g.set(false);
-@@ -325,17 +552,36 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
+@@ -325,17 +583,36 @@ public class LightEngineThreaded extends LightEngine implements AutoCloseable {
      private final java.util.List<Runnable> pre = new java.util.ArrayList<>();
      private final java.util.List<Runnable> post = new java.util.ArrayList<>();
      private void b() {
@@ -4879,17 +5006,17 @@ index 80cc96a4de5a5af964dfc6e77911426e8536fbce..35a569f61ba2d48f3f9692927a23777b
  
          }
 diff --git a/src/main/java/net/minecraft/server/ProtoChunk.java b/src/main/java/net/minecraft/server/ProtoChunk.java
-index a3ac883500eaebb353ad3108a17b5c740e384b03..42cae66f39571950929525eab592ea3feaadd587 100644
+index a3ac883500eaebb353ad3108a17b5c740e384b03..71c7fca4ea925fee8790c5a4042ad26584a8ceb3 100644
 --- a/src/main/java/net/minecraft/server/ProtoChunk.java
 +++ b/src/main/java/net/minecraft/server/ProtoChunk.java
-@@ -48,6 +48,37 @@ public class ProtoChunk implements IChunkAccess {
+@@ -48,6 +48,42 @@ public class ProtoChunk implements IChunkAccess {
      private volatile boolean u;
      final World world; // Paper - Anti-Xray - Add world // Paper - private -> default
  
 +    // Tuinity start - rewrite light engine
 +    private volatile com.tuinity.tuinity.chunk.light.SWMRNibbleArray[] blockNibbles = com.tuinity.tuinity.chunk.light.StarLightEngine.getFilledEmptyLight();
 +    private volatile com.tuinity.tuinity.chunk.light.SWMRNibbleArray[] skyNibbles = com.tuinity.tuinity.chunk.light.StarLightEngine.getFilledEmptyLight();
-+    private volatile boolean[][] emptinessMap = new boolean[9][];
++    private volatile boolean[] emptinessMap;
 +
 +    @Override
 +    public com.tuinity.tuinity.chunk.light.SWMRNibbleArray[] getBlockNibbles() {
@@ -4912,15 +5039,20 @@ index a3ac883500eaebb353ad3108a17b5c740e384b03..42cae66f39571950929525eab592ea3f
 +    }
 +
 +    @Override
-+    public boolean[][] getEmptinessMap() {
++    public boolean[] getEmptinessMap() {
 +        return this.emptinessMap;
++    }
++
++    @Override
++    public void setEmptinessMap(final boolean[] emptinessMap) {
++        this.emptinessMap = emptinessMap;
 +    }
 +    // Tuinity end - rewrite light engine
 +
      // Paper start - Anti-Xray - Add world
      @Deprecated public ProtoChunk(ChunkCoordIntPair chunkcoordintpair, ChunkConverter chunkconverter) { this(chunkcoordintpair, chunkconverter, null); } // Notice for updates: Please make sure this constructor isn't used anywhere
      public ProtoChunk(ChunkCoordIntPair chunkcoordintpair, ChunkConverter chunkconverter, World world) {
-@@ -173,7 +204,7 @@ public class ProtoChunk implements IChunkAccess {
+@@ -173,7 +209,7 @@ public class ProtoChunk implements IChunkAccess {
                  ChunkSection chunksection = this.a(j >> 4);
                  IBlockData iblockdata1 = chunksection.setType(i & 15, j & 15, k & 15, iblockdata);
  
@@ -4930,10 +5062,10 @@ index a3ac883500eaebb353ad3108a17b5c740e384b03..42cae66f39571950929525eab592ea3f
  
                      lightengine.a(blockposition);
 diff --git a/src/main/java/net/minecraft/server/ProtoChunkExtension.java b/src/main/java/net/minecraft/server/ProtoChunkExtension.java
-index 300cbb8b01d94e7eb0cded0c8e118103c416d4b6..5bc577683c73c50dc96d704b9c24ec821a9e7b4f 100644
+index 300cbb8b01d94e7eb0cded0c8e118103c416d4b6..0e528df0d9d77f39af1b5c62a29ef31e6ac3b614 100644
 --- a/src/main/java/net/minecraft/server/ProtoChunkExtension.java
 +++ b/src/main/java/net/minecraft/server/ProtoChunkExtension.java
-@@ -8,7 +8,34 @@ import javax.annotation.Nullable;
+@@ -8,7 +8,39 @@ import javax.annotation.Nullable;
  
  public class ProtoChunkExtension extends ProtoChunk {
  
@@ -4962,8 +5094,13 @@ index 300cbb8b01d94e7eb0cded0c8e118103c416d4b6..5bc577683c73c50dc96d704b9c24ec82
 +    }
 +
 +    @Override
-+    public boolean[][] getEmptinessMap() {
++    public boolean[] getEmptinessMap() {
 +        return this.getWrappedChunk().getEmptinessMap();
++    }
++
++    @Override
++    public void setEmptinessMap(final boolean[] emptinessMap) {
++        this.getWrappedChunk().setEmptinessMap(emptinessMap);
 +    }
 +    // Tuinity end - rewrite light engine
  
