@@ -135,7 +135,7 @@ index a072208bcd92ffa9ed47757de291b82be2e71e8e..8b4ab23563a9a0c047267143dc3c6c55
      // Paper end - optimise isOutsideOfRange
      // Paper start - optimize chunk status progression without jumping through thread pool
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 630274a6e0dec83339ac03f25ebc0246ccd3df1e..2a8455b813853693e20f368d3ece78d9424a413a 100644
+index 1cc9ec0377ce4f27ee1a9495b68325a29746c699..2861e46eb4d22346b4eeb167a023efedc7f0f33e 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
 @@ -195,6 +195,9 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
