@@ -624,10 +624,10 @@ index 0000000000000000000000000000000000000000..9910dc9f1a087f5baf404a5b8ebb5a9f
 +}
 diff --git a/src/main/java/com/tuinity/tuinity/chunk/light/SkyStarLightEngine.java b/src/main/java/com/tuinity/tuinity/chunk/light/SkyStarLightEngine.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8df35be7224c3e499c2fd46931e3ad325ec2f1b5
+index 0000000000000000000000000000000000000000..0cd48bd4032092fe1a9f12082e85195a125f0f87
 --- /dev/null
 +++ b/src/main/java/com/tuinity/tuinity/chunk/light/SkyStarLightEngine.java
-@@ -0,0 +1,748 @@
+@@ -0,0 +1,738 @@
 +package com.tuinity.tuinity.chunk.light;
 +
 +import com.tuinity.tuinity.util.WorldUtil;
@@ -1196,17 +1196,7 @@ index 0000000000000000000000000000000000000000..8df35be7224c3e499c2fd46931e3ad32
 +            final int startY = highestNonEmptySection << 4 | 15;
 +            for (int currZ = minZ; currZ <= maxZ; ++currZ) {
 +                for (int currX = minX; currX <= maxX; ++currX) {
-+                    final int end = this.tryPropagateSkylight(world, currX, startY, currZ, false, false);
-+                    if (end == startY) {
-+                        // we need to propagate this one ourselves.
-+                        this.appendToIncreaseQueue(
-+                                ((currX + (currZ << 6) + (startY << (6 + 6)) + this.coordinateOffset) & ((1L << (6 + 6 + 16)) - 1))
-+                                        | (15L << (6 + 6 + 16)) // we know we're at full lit here
-+                                        | (AxisDirection.POSITIVE_Y.everythingButThisDirection << (6 + 6 + 16 + 4)) // no need to check upwards, we know it's 15.
-+                                        // we know this block is air because the section is empty, so it's obviously not sidedly
-+                                        // transparent.
-+                        );
-+                    }
++                    this.tryPropagateSkylight(world, currX, startY + 1, currZ, false, false);
 +                }
 +            }
 +        } // else: apparently the chunk is empty
@@ -4015,7 +4005,7 @@ index 2b3a1ad11707ec495a37d7e6e84dcaf96b49b310..6ca9e373c402bf252bae6f08b88407bd
  
          while (iterator.hasNext()) {
 diff --git a/src/main/java/net/minecraft/server/ChunkRegionLoader.java b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-index 5eb14c4cd8259310cdc62d05c5d223092deb8bbe..13553da7c37d2701854c8d824311dd7bc1a0a423 100644
+index 5eb14c4cd8259310cdc62d05c5d223092deb8bbe..cba943682f5ee798517bc8c3a098c100e235320b 100644
 --- a/src/main/java/net/minecraft/server/ChunkRegionLoader.java
 +++ b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
 @@ -64,6 +64,13 @@ public class ChunkRegionLoader {
@@ -4023,7 +4013,7 @@ index 5eb14c4cd8259310cdc62d05c5d223092deb8bbe..13553da7c37d2701854c8d824311dd7b
      // Paper end
  
 +    // Tuinity start - rewrite light engine
-+    private static final int STARLIGHT_LIGHT_VERSION = 2;
++    private static final int STARLIGHT_LIGHT_VERSION = 3;
 +
 +    private static final String UNINITIALISED_SKYLIGHT_TAG = "starlight.skylight_uninit";
 +    private static final String STARLIGHT_VERSION_TAG = "starlight.light_version";
