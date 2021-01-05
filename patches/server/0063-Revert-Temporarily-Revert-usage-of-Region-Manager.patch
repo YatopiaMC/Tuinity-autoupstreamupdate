@@ -5,10 +5,10 @@ Subject: [PATCH] Revert Temporarily-Revert-usage-of-Region-Manager
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index e58ead9a1e2734147a525532a7458e236ea52cec..2bb4710868b4756c3446bb785c7dc1f00c9e4258 100644
+index 7977767248f2f118c9cd450f1202b260746dbedf..34fa53eb1370682fff3dc342e33ffe7c48d1689f 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -1416,7 +1416,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1411,7 +1411,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
                  // Tuinity - replace logic
                  worldserver.timings.doTick.startTiming(); // Spigot
                  worldserver.doTick(booleansupplier);
@@ -18,7 +18,7 @@ index e58ead9a1e2734147a525532a7458e236ea52cec..2bb4710868b4756c3446bb785c7dc1f0
                  // Tuinity - replace logic
              } catch (Throwable throwable) {
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 8286039c4e2db33b7782b9af13e6ac8f7a2ff484..688ed756d7128d1a5d1107f390cf0ea1615df27d 100644
+index 533a407a28fbe43d467913585370c7a0cca34b94..caaffea1b670ddfd20bf39cbd55da1c5cf561288 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
 @@ -473,7 +473,7 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {
