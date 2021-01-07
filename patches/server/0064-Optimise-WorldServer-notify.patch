@@ -44,7 +44,7 @@ index 55fa3911703f96cf1f97c82b19d8e2d0d220016b..b92ca4a6de01f3f86367fb8dfe3591b0
              Vec3D vec3d = new Vec3D(((double) pathpoint.a + this.a.locX()) / 2.0D, ((double) pathpoint.b + this.a.locY()) / 2.0D, ((double) pathpoint.c + this.a.locZ()) / 2.0D);
  
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 688ed756d7128d1a5d1107f390cf0ea1615df27d..a498975d88fc7144b6f20aca971271181d6cb422 100644
+index caaffea1b670ddfd20bf39cbd55da1c5cf561288..e136195f3e806c50492b89811e82940fd38bafa6 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
 @@ -291,7 +291,15 @@ public class PlayerChunkMap extends IChunkLoader implements PlayerChunk.d {

@@ -37,7 +37,7 @@ by 2x. According to cpu time, the light engine itself spent 10x less time
 lighting chunks for generation.
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperCommand.java b/src/main/java/com/destroystokyo/paper/PaperCommand.java
-index ad6b15f401ce7493a2a247e2a2af23f73ade02ca..95aaf9adb88e2a7d299fa27340206b3139e9526a 100644
+index 196648e65c6f58c18e19623474d69d780d542689..57863d913c67750cdd794a65513f3daf93580c52 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperCommand.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperCommand.java
 @@ -182,6 +182,44 @@ public class PaperCommand extends Command {
@@ -3947,7 +3947,7 @@ index 2760b377d1f68ac5f66e7274317379e2dda8288a..829d4a7508e1656dbdc912096b7eafcf
              protected final boolean c;
              private final boolean[] j;
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 2b3a1ad11707ec495a37d7e6e84dcaf96b49b310..6ca9e373c402bf252bae6f08b88407bda48d7f0e 100644
+index 6fa33cd4a3e1181ad8fe2b3c9872951c5780e536..0a8173a5bcd7212ebeff204fef5efdf1633aac78 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
 @@ -140,6 +140,41 @@ public class Chunk implements IChunkAccess {
@@ -4975,7 +4975,7 @@ index a22f0cccecc85b4e4fe4603bcfa213f15c23db69..6cc4a035c8b1312b59685b20039d5e82
                      this.d &= ~(1 << k);
                      if (nibblearray != null) {
 diff --git a/src/main/java/net/minecraft/server/PlayerChunk.java b/src/main/java/net/minecraft/server/PlayerChunk.java
-index 80cc96a4de5a5af964dfc6e77911426e8536fbce..35a569f61ba2d48f3f9692927a23777bafcf26d6 100644
+index 8b4ab23563a9a0c047267143dc3c6c5545d6c125..ac82f1791ce07e9a23cf97ca34974ab25e26be46 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunk.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunk.java
 @@ -383,13 +383,14 @@ public class PlayerChunk {
