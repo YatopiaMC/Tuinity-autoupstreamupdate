@@ -134,7 +134,7 @@ index d9362b74fda2ea937281f897fbc2cb501775a275..79a11d17a2822b192dec5981d0344ae6
          if (!this.d.isEmpty()) {
              for (int i = 0; i < 16; ++i) {
 diff --git a/src/main/java/net/minecraft/server/VillagePlace.java b/src/main/java/net/minecraft/server/VillagePlace.java
-index 3c9668c9c30ea57c1608e32ece27ec56d580fc62..99778f80c0f6c2e15cc3b8298dc0bbc5493f3e83 100644
+index 0094babbd59cc81554b9480088464d632824ae8e..731a7b52c1c659b3b985704dea9cf57f6c5bcecb 100644
 --- a/src/main/java/net/minecraft/server/VillagePlace.java
 +++ b/src/main/java/net/minecraft/server/VillagePlace.java
 @@ -4,6 +4,7 @@ import com.mojang.datafixers.DataFixer;
@@ -297,7 +297,7 @@ index 3c9668c9c30ea57c1608e32ece27ec56d580fc62..99778f80c0f6c2e15cc3b8298dc0bbc5
      public void a(BlockPosition blockposition, VillagePlaceType villageplacetype) {
          ((VillagePlaceSection) this.e(SectionPosition.a(blockposition).s())).a(blockposition, villageplacetype);
      }
-@@ -138,10 +270,11 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
+@@ -140,10 +272,11 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
      }
  
      public int a(SectionPosition sectionposition) {
@@ -311,7 +311,7 @@ index 3c9668c9c30ea57c1608e32ece27ec56d580fc62..99778f80c0f6c2e15cc3b8298dc0bbc5
      private boolean f(long i) {
          Optional<VillagePlaceSection> optional = this.c(i);
  
-@@ -157,7 +290,7 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
+@@ -159,7 +292,7 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
              super.a(booleansupplier);
          } else {
              //super.a(booleansupplier); // re-implement below
@@ -320,7 +320,7 @@ index 3c9668c9c30ea57c1608e32ece27ec56d580fc62..99778f80c0f6c2e15cc3b8298dc0bbc5
                  ChunkCoordIntPair chunkcoordintpair = SectionPosition.a(((RegionFileSection)this).d.firstLong()).r();
  
                  NBTTagCompound data;
-@@ -168,19 +301,24 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
+@@ -170,19 +303,24 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
                      chunkcoordintpair.x, chunkcoordintpair.z, data, null, com.destroystokyo.paper.io.PrioritizedTaskQueue.NORMAL_PRIORITY); // Tuinity - use normal priority
              }
          }
@@ -348,7 +348,7 @@ index 3c9668c9c30ea57c1608e32ece27ec56d580fc62..99778f80c0f6c2e15cc3b8298dc0bbc5
      }
  
      public void a(ChunkCoordIntPair chunkcoordintpair, ChunkSection chunksection) {
-@@ -245,7 +383,7 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
+@@ -247,7 +385,7 @@ public class VillagePlace extends RegionFileSection<VillagePlaceSection> {
  
          @Override
          protected int b(long i) {
