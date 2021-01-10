@@ -473,7 +473,7 @@ index db735e29d427cc8f4bd4ba54c7a44daf9fed9e61..636bbbc42466cb54c300352f400464fe
      }
  
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index e70fb45c051d423e50adadbe0100e16c46f50f5f..7788cd525cb20f78533e8335f062342ffe09cb6e 100644
+index df7c6aacdd7e812fc8bd4834bce81273fe4915ef..f5a7fb48da469bb53d38dceddfe56fe349e7e5e8 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -372,248 +372,15 @@ public class WorldServer extends World implements GeneratorAccessSeed {

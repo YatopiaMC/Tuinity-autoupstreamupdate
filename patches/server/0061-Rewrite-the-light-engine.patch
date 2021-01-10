@@ -5143,7 +5143,7 @@ index 700660dd93b3090334bb3033d5f5fdd6ab684744..e3b72922e2dfad07f3452ec5ee2af379
          VoxelShape[] avoxelshape = new VoxelShape[]{VoxelShapes.a()};
  
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 676c817a4bbf1034554f8a100822bf483dc89b67..e70fb45c051d423e50adadbe0100e16c46f50f5f 100644
+index a65a73d2f3f42862950b73b42e673ebdb6781a4e..df7c6aacdd7e812fc8bd4834bce81273fe4915ef 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -304,6 +304,13 @@ public class WorldServer extends World implements GeneratorAccessSeed {
