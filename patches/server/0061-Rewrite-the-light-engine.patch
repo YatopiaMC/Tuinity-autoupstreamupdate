@@ -3947,7 +3947,7 @@ index 2760b377d1f68ac5f66e7274317379e2dda8288a..829d4a7508e1656dbdc912096b7eafcf
              protected final boolean c;
              private final boolean[] j;
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index 6fa33cd4a3e1181ad8fe2b3c9872951c5780e536..0a8173a5bcd7212ebeff204fef5efdf1633aac78 100644
+index 781d74cf7e3669d71727cce781a8f8ce088c5547..7842e65115cf6c37322c83ebff954a06408680b5 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
 @@ -140,6 +140,41 @@ public class Chunk implements IChunkAccess {
@@ -3992,7 +3992,7 @@ index 6fa33cd4a3e1181ad8fe2b3c9872951c5780e536..0a8173a5bcd7212ebeff204fef5efdf1
  
      // Tuinity start - entity slices by class
      private final com.tuinity.tuinity.chunk.ChunkEntitiesByClass entitiesByClass = new com.tuinity.tuinity.chunk.ChunkEntitiesByClass(this);
-@@ -442,6 +477,11 @@ public class Chunk implements IChunkAccess {
+@@ -443,6 +478,11 @@ public class Chunk implements IChunkAccess {
  
      public Chunk(World world, ProtoChunk protochunk) {
          this(world, protochunk.getPos(), protochunk.getBiomeIndex(), protochunk.p(), protochunk.n(), protochunk.o(), protochunk.getInhabitedTime(), protochunk.getSections(), (Consumer) null);
