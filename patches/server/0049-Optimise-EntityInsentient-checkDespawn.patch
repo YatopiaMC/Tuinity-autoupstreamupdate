@@ -9,7 +9,7 @@ since the penalty of a map lookup could outweigh the benefits of
 searching less players (as it basically did in the outside range patch).
 
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
-index cebce2a4029263ba0caf529196482c41009beb1c..6fa33cd4a3e1181ad8fe2b3c9872951c5780e536 100644
+index 8c6c653b3454f59cf823fd92f7b464a8f998b675..781d74cf7e3669d71727cce781a8f8ce088c5547 100644
 --- a/src/main/java/net/minecraft/server/Chunk.java
 +++ b/src/main/java/net/minecraft/server/Chunk.java
 @@ -157,6 +157,85 @@ public class Chunk implements IChunkAccess {
@@ -203,7 +203,7 @@ index 1cc9ec0377ce4f27ee1a9495b68325a29746c699..2861e46eb4d22346b4eeb167a023efed
      // Paper start - Chunk Prioritization
      public void queueHolderUpdate(PlayerChunk playerchunk) {
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index e531faede1f3ae1160e690b93f7601c42f4c406c..4a17c1b8092968247ee9fa0ce2b5bd44baf2b18f 100644
+index 475076ec48adc96e1b74b6ce8b4af23b7cfde82b..cd67ca19436f791f871fd2bf4c258b6342fb554e 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -123,6 +123,34 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
