@@ -279,7 +279,7 @@ index 297a3d5528c66260368cbd6b88b2720ed39ca536..c96c92db273ad2ff0fc6335e1a7da7c0
      // Paper start - Prevent armor stands from doing entity lookups
      @Override
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index f6e07d5f2432756d6ce687162dae87990fc6e8a2..76e48d8d6f037c034e6cfe80d6022fdbed862000 100644
+index 3e2299839217ac468d7cb4361fae972f400c8eaa..d9c460bc56f8e7fafb1bea621336f09a56a6cc00 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -296,6 +296,10 @@ public class WorldServer extends World implements GeneratorAccessSeed {

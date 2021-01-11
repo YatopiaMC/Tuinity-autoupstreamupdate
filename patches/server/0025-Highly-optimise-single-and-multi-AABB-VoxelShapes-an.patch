@@ -599,7 +599,7 @@ index 95ef96286855624590b72d69514b0fc0e08fddba..73163b417af7e522a4509bf9c1ab56d6
          T t0 = this.h.a(this.a.a(i));
  
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 82099329cfb47abc7aef60a672ca28e48ecf507d..d6a4065424932cd66d995f12560d0d13d56c1493 100644
+index 0636139860a715a2071fe704fbc216c66e246112..65075ec384f839fa47e93458a942376f59472d6e 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -136,7 +136,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
@@ -1344,7 +1344,7 @@ index f011869880fedae4b69e505491e8bdbc5f51dfba..0d10d317cd0b60fc0866ae505c7fd71f
          return this.j.d();
      }
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 76e48d8d6f037c034e6cfe80d6022fdbed862000..3e314d715a53582581096deb4b8b97f7a8bf8de9 100644
+index d9c460bc56f8e7fafb1bea621336f09a56a6cc00..ec8c1624fc90897257ae808359582f0c2f7c3c71 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -360,6 +360,451 @@ public class WorldServer extends World implements GeneratorAccessSeed {
