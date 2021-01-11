@@ -1072,7 +1072,7 @@ index 75d25576d68ec95a14372f8530f4916f2bd7c3c5..5e2168fa0958325358a9c41478d70c78
          PlayerChunk playerchunk = this.getChunk(k);
  
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index d9021fde3d0908dc89384617055874ac356a8fcf..4fc96ef8c6062d94fb58aa274e9050235dcb1b9b 100644
+index 36fbe16e6f06fca3eb282cce5b8c5fcc87a0166d..4ca947fddfbe4e4e3d48c95d6ebd655cb4ee3df2 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -207,6 +207,14 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
@@ -1277,7 +1277,7 @@ index e21c747b6c39155c44bf30860681d67b0b29fb12..9f4f9df09968dc45878ad59f5ee45672
          return voxelshape != b() && voxelshape1 != b() ? (voxelshape.isEmpty() && voxelshape1.isEmpty() ? false : !c(b(), b(voxelshape, voxelshape1, OperatorBoolean.OR), OperatorBoolean.ONLY_FIRST)) : true;
      }
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index b033ff44373ec87702946c3cefe664fb46d609f4..e2c069c84f8f0039770ff756446e2c9246221166 100644
+index 9c50357bb5da309b7cad74fdee15697a20e2e15f..7ff860437f01c64b08812c5ae01e47a5cda113de 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -55,6 +55,7 @@ import org.bukkit.event.server.MapInitializeEvent;
