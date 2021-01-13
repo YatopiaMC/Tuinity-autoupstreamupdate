@@ -324,10 +324,10 @@ index 253377c6238594de1f76cafcbf8223592e4d3f6b..3ebe3d0dc4c2c6aee6ea349006a74cbe
          if (entityliving == entityliving1) {
              return false;
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 02a8b209ec2b4fd35b0ddb086010e0c0d1cbee48..475076ec48adc96e1b74b6ce8b4af23b7cfde82b 100644
+index 6c3f496ba6c0c6c4911e2592ded27df08ae54b14..3ad08863c00d96c827c26c8d4c9a206a43bb1db9 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -1186,7 +1186,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -1187,7 +1187,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
                  Chunk chunk = (Chunk)this.getChunkIfLoadedImmediately(i1, j1); // Paper
  
                  if (chunk != null) {
@@ -336,7 +336,7 @@ index 02a8b209ec2b4fd35b0ddb086010e0c0d1cbee48..475076ec48adc96e1b74b6ce8b4af23b
                  }
              }
          }
-@@ -1209,7 +1209,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -1210,7 +1210,7 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
                  Chunk chunk = (Chunk)this.getChunkIfLoadedImmediately(i1, j1); // Paper
  
                  if (chunk != null) {
@@ -345,7 +345,7 @@ index 02a8b209ec2b4fd35b0ddb086010e0c0d1cbee48..475076ec48adc96e1b74b6ce8b4af23b
                  }
              }
          }
-@@ -1217,6 +1217,106 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
+@@ -1218,6 +1218,106 @@ public abstract class World implements GeneratorAccess, AutoCloseable {
          return list;
      }
  
