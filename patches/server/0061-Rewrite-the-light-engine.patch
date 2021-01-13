@@ -37,10 +37,10 @@ by 2x. According to cpu time, the light engine itself spent 10x less time
 lighting chunks for generation.
 
 diff --git a/src/main/java/com/destroystokyo/paper/PaperCommand.java b/src/main/java/com/destroystokyo/paper/PaperCommand.java
-index 196648e65c6f58c18e19623474d69d780d542689..57863d913c67750cdd794a65513f3daf93580c52 100644
+index 0abfe19e204d20af0f8dedbeedb0ef98dfe9d3c8..1a876336384198bad2a25c018be5f2418027dd47 100644
 --- a/src/main/java/com/destroystokyo/paper/PaperCommand.java
 +++ b/src/main/java/com/destroystokyo/paper/PaperCommand.java
-@@ -182,6 +182,44 @@ public class PaperCommand extends Command {
+@@ -186,6 +186,44 @@ public class PaperCommand extends Command {
          }
      }
  
@@ -85,7 +85,7 @@ index 196648e65c6f58c18e19623474d69d780d542689..57863d913c67750cdd794a65513f3daf
      private void doFixLight(CommandSender sender, String[] args) {
          if (!(sender instanceof Player)) {
              sender.sendMessage("Only players can use this command");
-@@ -190,7 +228,7 @@ public class PaperCommand extends Command {
+@@ -194,7 +232,7 @@ public class PaperCommand extends Command {
          int radius = 2;
          if (args.length > 1) {
              try {
@@ -94,7 +94,7 @@ index 196648e65c6f58c18e19623474d69d780d542689..57863d913c67750cdd794a65513f3daf
              } catch (Exception e) {
                  sender.sendMessage("Not a number");
                  return;
-@@ -203,6 +241,13 @@ public class PaperCommand extends Command {
+@@ -207,6 +245,13 @@ public class PaperCommand extends Command {
          net.minecraft.server.WorldServer world = (WorldServer) handle.world;
          LightEngineThreaded lightengine = world.getChunkProvider().getLightEngine();
  
@@ -5143,7 +5143,7 @@ index 700660dd93b3090334bb3033d5f5fdd6ab684744..e3b72922e2dfad07f3452ec5ee2af379
          VoxelShape[] avoxelshape = new VoxelShape[]{VoxelShapes.a()};
  
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index a65a73d2f3f42862950b73b42e673ebdb6781a4e..df7c6aacdd7e812fc8bd4834bce81273fe4915ef 100644
+index 623d020fe8620d51d5c54d76fdcf73be75625329..f0b0a305c07e225d33f5e6cfd2a63884ccfe0654 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -304,6 +304,13 @@ public class WorldServer extends World implements GeneratorAccessSeed {
