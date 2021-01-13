@@ -183,10 +183,10 @@ index 50ee5a1cdf91d9a2e720e5772c20cfd2e5064683..3e2299839217ac468d7cb4361fae972f
  
      public void a(Entity entity, Entity entity1) {
 diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
-index 513c1041c34ebb3ac1775674a3f4526693759c08..4d310908489953d6d061b2358f614142edacb62e 100644
+index ae8903ee1decd22e2ad6138f29fbc757b807e0a7..58d01c6f8abcd9e1792495abd08b186f9d03f834 100644
 --- a/src/main/java/org/spigotmc/WatchdogThread.java
 +++ b/src/main/java/org/spigotmc/WatchdogThread.java
-@@ -61,6 +61,84 @@ public class WatchdogThread extends Thread
+@@ -65,6 +65,84 @@ public class WatchdogThread extends Thread
          }
      }
  
@@ -271,7 +271,7 @@ index 513c1041c34ebb3ac1775674a3f4526693759c08..4d310908489953d6d061b2358f614142
      @Override
      public void run()
      {
-@@ -117,6 +195,7 @@ public class WatchdogThread extends Thread
+@@ -121,6 +199,7 @@ public class WatchdogThread extends Thread
                  log.log( Level.SEVERE, "------------------------------" );
                  log.log( Level.SEVERE, "Server thread dump (Look for plugins here before reporting to Paper!):" ); // Paper
                  ChunkTaskManager.dumpAllChunkLoadInfo(); // Paper
