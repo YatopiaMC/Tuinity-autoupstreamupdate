@@ -140,7 +140,7 @@ index 7ea293f38dedd6066601d94adbe175a31c502e1f..e698dd22607b2b2c4068c5bfb03ac53e
              });
              throw CancelledPacketHandleException.INSTANCE;
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 50ee5a1cdf91d9a2e720e5772c20cfd2e5064683..3e2299839217ac468d7cb4361fae972f400c8eaa 100644
+index 9138c05180256a49872707afcaeade10efa1c86b..fa0ac6e15b6c2bc212ba347243105cff3b9a1748 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -900,7 +900,26 @@ public class WorldServer extends World implements GeneratorAccessSeed {

@@ -887,10 +887,10 @@ index ff74be14512a947e81b62d53e616131ca7d7f609..653ba0f1d84af1997d768426d3542c9d
          0, 2, 60L, TimeUnit.SECONDS,
          new LinkedBlockingQueue<Runnable>(),
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 6af51b7bfeff0d1cee1e1e5fe9901cc397b2f05b..aefba4daada139401ff00e92525c6cb3950314c5 100644
+index 63aeef4258bb5a6295946e16d914b404d66e7c1c..7994b358f35b2a184f1eeb5d9b7ae5ead58d0271 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -1317,6 +1317,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
+@@ -1321,6 +1321,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
          }
          // Paper end
  
@@ -1344,7 +1344,7 @@ index f011869880fedae4b69e505491e8bdbc5f51dfba..0d10d317cd0b60fc0866ae505c7fd71f
          return this.j.d();
      }
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index d9c460bc56f8e7fafb1bea621336f09a56a6cc00..ec8c1624fc90897257ae808359582f0c2f7c3c71 100644
+index b39a4f2e84e0ed9db089052a4f3100d4682d755e..987758180c06e209bd7ef4ecbbb0806c9b1e74d0 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -360,6 +360,451 @@ public class WorldServer extends World implements GeneratorAccessSeed {
