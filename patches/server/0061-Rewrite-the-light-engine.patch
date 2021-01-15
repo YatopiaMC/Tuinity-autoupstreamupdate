@@ -4005,7 +4005,7 @@ index 781d74cf7e3669d71727cce781a8f8ce088c5547..7842e65115cf6c37322c83ebff954a06
  
          while (iterator.hasNext()) {
 diff --git a/src/main/java/net/minecraft/server/ChunkRegionLoader.java b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-index 5eb14c4cd8259310cdc62d05c5d223092deb8bbe..cba943682f5ee798517bc8c3a098c100e235320b 100644
+index 5082ee57c0f4cbba0cca73ae9c9ae4b4c8a53ced..090e5eafeb35c60fb470b74863d59ed4a4f66be8 100644
 --- a/src/main/java/net/minecraft/server/ChunkRegionLoader.java
 +++ b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
 @@ -64,6 +64,13 @@ public class ChunkRegionLoader {
@@ -5143,7 +5143,7 @@ index 700660dd93b3090334bb3033d5f5fdd6ab684744..e3b72922e2dfad07f3452ec5ee2af379
          VoxelShape[] avoxelshape = new VoxelShape[]{VoxelShapes.a()};
  
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 623d020fe8620d51d5c54d76fdcf73be75625329..f0b0a305c07e225d33f5e6cfd2a63884ccfe0654 100644
+index d35be20fa6419110ad2f64b598813996779e7be3..3599906086c4edf5244ac539bb5518736b9e0746 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -304,6 +304,13 @@ public class WorldServer extends World implements GeneratorAccessSeed {
