@@ -599,7 +599,7 @@ index 95ef96286855624590b72d69514b0fc0e08fddba..73163b417af7e522a4509bf9c1ab56d6
          T t0 = this.h.a(this.a.a(i));
  
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 0636139860a715a2071fe704fbc216c66e246112..65075ec384f839fa47e93458a942376f59472d6e 100644
+index d223b7ed3203ab3ae27d49f1e7d7cb7fe957bf21..3ac22950132f66c8ca71aeac136c10cd360fb621 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -136,7 +136,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
@@ -887,7 +887,7 @@ index ff74be14512a947e81b62d53e616131ca7d7f609..653ba0f1d84af1997d768426d3542c9d
          0, 2, 60L, TimeUnit.SECONDS,
          new LinkedBlockingQueue<Runnable>(),
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 63aeef4258bb5a6295946e16d914b404d66e7c1c..7994b358f35b2a184f1eeb5d9b7ae5ead58d0271 100644
+index b6f7d1c38517c8c96684913ad58b6f1e929e2d2b..19b26543a1503b8710ef5c013d0cf26e55749bfd 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1321,6 +1321,8 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -1344,7 +1344,7 @@ index f011869880fedae4b69e505491e8bdbc5f51dfba..0d10d317cd0b60fc0866ae505c7fd71f
          return this.j.d();
      }
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index b39a4f2e84e0ed9db089052a4f3100d4682d755e..987758180c06e209bd7ef4ecbbb0806c9b1e74d0 100644
+index 1354e85916ab9748cea000c08c32bee3fa599655..8db373816bbcce67dea82350e4b45453eb3dd1ef 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -360,6 +360,451 @@ public class WorldServer extends World implements GeneratorAccessSeed {

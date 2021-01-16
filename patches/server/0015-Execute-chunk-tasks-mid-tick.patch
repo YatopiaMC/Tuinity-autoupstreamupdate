@@ -92,7 +92,7 @@ index d68f91a881e001649f20e9257a4b2a4a8fc2cb04..2a28502f9e2bc812370d0258d1c1d492
          @Override
          protected boolean executeNext() {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index bb8e801130584be5e3c07af027424add136b54f6..63aeef4258bb5a6295946e16d914b404d66e7c1c 100644
+index 9def4694d5b90b108f9f67721cf62e58f1ac6536..b6f7d1c38517c8c96684913ad58b6f1e929e2d2b 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -985,7 +985,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -279,7 +279,7 @@ index ab8a5c00e383ef84cb3e5acf9ac9221f672effdd..e3ed8fb7881bc00b1b2345c1682f3005
      // Paper start - Prevent armor stands from doing entity lookups
      @Override
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index fa0ac6e15b6c2bc212ba347243105cff3b9a1748..b39a4f2e84e0ed9db089052a4f3100d4682d755e 100644
+index d43f97449d8de64c041912b36d1c2369661c1f64..1354e85916ab9748cea000c08c32bee3fa599655 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -296,6 +296,10 @@ public class WorldServer extends World implements GeneratorAccessSeed {

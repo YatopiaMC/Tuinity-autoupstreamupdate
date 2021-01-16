@@ -90,7 +90,7 @@ index 8816d3326af25431e2235c5e735e86c7335f60dc..2e25102b6d7e71b0a536e77c2116981a
          }
          if (entity instanceof EntityItem) {
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index cc8c7a2533d45be1b3441e03b2130436dcc45393..0636139860a715a2071fe704fbc216c66e246112 100644
+index 7e23158f0f85e3a9efe00a3e635e74b18efed6c6..d223b7ed3203ab3ae27d49f1e7d7cb7fe957bf21 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -230,6 +230,41 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke

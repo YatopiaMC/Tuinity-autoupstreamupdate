@@ -324,7 +324,7 @@ index 38c49d04d7bfb9c116a3b6eb87daaad2c75040cf..ab8a5c00e383ef84cb3e5acf9ac9221f
          IBlockData iblockdata1 = oldBlock;
          IBlockData iblockdata2 = actualBlock;
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index c57c4a4500f1ee084512fb0bee59af0260e71156..9138c05180256a49872707afcaeade10efa1c86b 100644
+index 603935fef6211bd4addcd3bac58ebc0729e387c3..969902a5c498114d93c3e956a01066343afca14c 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -1660,6 +1660,7 @@ public class WorldServer extends World implements GeneratorAccessSeed {
