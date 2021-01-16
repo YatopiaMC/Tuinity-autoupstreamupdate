@@ -1072,7 +1072,7 @@ index 75d25576d68ec95a14372f8530f4916f2bd7c3c5..5e2168fa0958325358a9c41478d70c78
          PlayerChunk playerchunk = this.getChunk(k);
  
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 36fbe16e6f06fca3eb282cce5b8c5fcc87a0166d..4ca947fddfbe4e4e3d48c95d6ebd655cb4ee3df2 100644
+index f9d7419e376268b00db2eb98a3db4116bdb72bd8..6e47c3af583ff1e487eeb5a24ebf0fdb2f8514fe 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -207,6 +207,14 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
@@ -1103,7 +1103,7 @@ index 14ddb2a8949ce18a0c42e17a82d0d7a13ac325fe..476da43b9f0ef35b4985f88e4784b1f8
          return this.a(c(i, j));
      }
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 725b6710ff54871205985e0d196da3820b4e6add..ac8c182a5f6c49e4309a77b07d3655b0a9b73a8d 100644
+index d19f944c774ad241626b268771df8e7e86cc71ae..49fae9a579d31e298c3d2c351bf0a330bf3aaf5d 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -151,6 +151,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
@@ -1277,7 +1277,7 @@ index e21c747b6c39155c44bf30860681d67b0b29fb12..9f4f9df09968dc45878ad59f5ee45672
          return voxelshape != b() && voxelshape1 != b() ? (voxelshape.isEmpty() && voxelshape1.isEmpty() ? false : !c(b(), b(voxelshape, voxelshape1, OperatorBoolean.OR), OperatorBoolean.ONLY_FIRST)) : true;
      }
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 136fe0d65bf6356d84be1b962383c8630e990d89..c57c4a4500f1ee084512fb0bee59af0260e71156 100644
+index fbe7f43f6c1010e7a34114f8afb0e64934744335..603935fef6211bd4addcd3bac58ebc0729e387c3 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -55,6 +55,7 @@ import org.bukkit.event.server.MapInitializeEvent;

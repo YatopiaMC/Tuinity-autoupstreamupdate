@@ -7,7 +7,7 @@ Subject: [PATCH] Detail more information in watchdog dumps
 - Dump player name, player uuid, position, and world for packet handling
 
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 4ca947fddfbe4e4e3d48c95d6ebd655cb4ee3df2..cc8c7a2533d45be1b3441e03b2130436dcc45393 100644
+index 6e47c3af583ff1e487eeb5a24ebf0fdb2f8514fe..7e23158f0f85e3a9efe00a3e635e74b18efed6c6 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -599,7 +599,39 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
@@ -140,7 +140,7 @@ index 7ea293f38dedd6066601d94adbe175a31c502e1f..e698dd22607b2b2c4068c5bfb03ac53e
              });
              throw CancelledPacketHandleException.INSTANCE;
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 9138c05180256a49872707afcaeade10efa1c86b..fa0ac6e15b6c2bc212ba347243105cff3b9a1748 100644
+index 969902a5c498114d93c3e956a01066343afca14c..d43f97449d8de64c041912b36d1c2369661c1f64 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -900,7 +900,26 @@ public class WorldServer extends World implements GeneratorAccessSeed {
