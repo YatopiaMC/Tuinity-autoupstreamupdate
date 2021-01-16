@@ -5,7 +5,7 @@ Subject: [PATCH] Revert Temporarily-Revert-usage-of-Region-Manager
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 5aca9d214e35e37ffb1f49f01d633399618111f8..28c1995e37cb134979b953028844fd5567aa9d00 100644
+index 42f72c51781a8a54232f9bbea261242b0edd0de5..45e310e249a83714d0001d85b2ead8d4f8a2d742 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1415,7 +1415,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
