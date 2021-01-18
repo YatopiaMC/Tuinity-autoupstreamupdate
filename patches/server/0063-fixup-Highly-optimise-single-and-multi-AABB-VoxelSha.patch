@@ -218,7 +218,7 @@ index e95fc7d98b70c84f3bf94440da977deb2d541e46..ab1085091fefea3a3fa15f7028bec050
      // Tuinity end - optimise pathfinder collision detection
  
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 097715bc66a2db4fdebcf8ed53aed459dfb43fa6..a125489d6a3b202d7e2b3d7df26fd72b81f2bd98 100644
+index f57e0e1488b98c619daed4854d133a7ed552c40d..013c44f80f74376e8bbb37afb5de07aa5d8fb1bc 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -785,7 +785,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
@@ -271,7 +271,7 @@ index 097715bc66a2db4fdebcf8ed53aed459dfb43fa6..a125489d6a3b202d7e2b3d7df26fd72b
  
              if (this.aG() && this.isBurning()) {
                  this.playSound(SoundEffects.ENTITY_GENERIC_EXTINGUISH_FIRE, 0.7F, 1.6F + (this.random.nextFloat() - this.random.nextFloat()) * 0.4F);
-@@ -1213,18 +1181,34 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -1204,18 +1172,34 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
      }
  
      protected void checkBlockCollisions() {
@@ -309,7 +309,7 @@ index 097715bc66a2db4fdebcf8ed53aed459dfb43fa6..a125489d6a3b202d7e2b3d7df26fd72b
                          try {
                              iblockdata.a(this.world, blockposition_mutableblockposition, this);
                              this.a(iblockdata);
-@@ -1238,6 +1222,11 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -1229,6 +1213,11 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
                      }
                  }
              }

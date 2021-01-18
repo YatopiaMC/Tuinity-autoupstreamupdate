@@ -4263,7 +4263,7 @@ index 781d74cf7e3669d71727cce781a8f8ce088c5547..7842e65115cf6c37322c83ebff954a06
  
          while (iterator.hasNext()) {
 diff --git a/src/main/java/net/minecraft/server/ChunkRegionLoader.java b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
-index d0bc446815006cf1b527d1e51e051677b05ec19f..6a8cb5ae31886fb0926cfd1e8d0b4f48029c985a 100644
+index 17a5b5b5bab4412242a18224b366674c25cdf286..076d6c1e1cc049dd312ecb30518e7b25fc2d7371 100644
 --- a/src/main/java/net/minecraft/server/ChunkRegionLoader.java
 +++ b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
 @@ -64,6 +64,13 @@ public class ChunkRegionLoader {
