@@ -6,10 +6,10 @@ Subject: [PATCH] Copy passenger list in enderTeleportTo
 Fixes https://github.com/Spottedleaf/Tuinity/issues/208
 
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 551199005e8a7ddb1bbe957c3935ff596a2cd567..f4cafdfd988f79e718a0fb2e464e00166fdc6a89 100644
+index e4bc8443620e9ae4bb0b243e17b54716e17bba11..f57e0e1488b98c619daed4854d133a7ed552c40d 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
-@@ -3104,7 +3104,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
+@@ -3095,7 +3095,7 @@ public abstract class Entity implements INamableTileEntity, ICommandListener, Ke
              this.recursiveStream().forEach((entity) -> {
                  worldserver.chunkCheck(entity);
                  entity.az = true;
